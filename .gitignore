@@ -2,6 +2,8 @@ node_modules/
 .wrangler/
 .openai/
 build/
+.local-build-number
+dist/build-info.json
 .env
 .env.*
 .dev.vars

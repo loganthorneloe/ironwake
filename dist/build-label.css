@@ -1,0 +1,23 @@
+/* A viewport overlay shared by menus, deployment and combat. */
+#buildLabel{
+ position:fixed;
+ left:calc(8px + env(safe-area-inset-left,0px));
+ bottom:calc(4px + env(safe-area-inset-bottom,0px));
+ z-index:100;
+ max-width:calc(100vw - 16px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));
+ padding:1px 6px;
+ border:1px solid #8baf5c40;
+ border-radius:3px;
+ background:#0b100ded;
+ color:#b2c59c;
+ font:10px/16px ui-monospace,Consolas,monospace;
+ letter-spacing:0;
+ white-space:nowrap;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ pointer-events:none;
+}
+/* Leave a clear strip below the combat panels and menu footer text. */
+#vicinityPanel,#loadoutPanel{bottom:calc(34px + env(safe-area-inset-bottom,0px))}
+.menu-footer{padding-bottom:28px}
+body[data-screen=home] .menu-stage{min-height:calc(100svh - 154px)}

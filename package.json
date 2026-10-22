@@ -1,6 +1,6 @@
 {
   "name": "ironwake",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,8 +8,14 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.js",
+    "build:info": "node scripts/build-info.mjs",
+    "version": "node scripts/build-info.mjs",
+    "preview": "node scripts/preview-server.mjs",
+    "predev": "node scripts/build-info.mjs",
     "dev": "wrangler dev --port 4174",
+    "prebuild": "node scripts/build-info.mjs",
     "build": "wrangler deploy --dry-run --outdir build",
+    "predeploy": "node scripts/build-info.mjs",
     "deploy": "wrangler deploy"
   },
   "devDependencies": {

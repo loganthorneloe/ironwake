@@ -34,3 +34,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - name: Record build identity
+        run: |
+          node --input-type=module -e 'import fs from "node:fs"; const info = JSON.parse(fs.readFileSync("dist/build-info.json", "utf8")); fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### IRONWAKE build\n\n${info.label}\n\nSource: ${info.revision}\n`);'
+      - name: Upload build identity
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-info-${{ github.run_number }}-${{ github.run_attempt }}
+          path: dist/build-info.json
+          if-no-files-found: error

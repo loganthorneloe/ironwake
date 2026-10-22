@@ -109,6 +109,23 @@ Configure a branch rule for `main` requiring **Test and build** before merging. 
 
 Production deployment remains manual: after reviewing and merging changes, update your local `main`, run `npm ci`, `npm test`, and `npm run build`, then run `npm run deploy` using your local Wrangler authentication.
 
+## Version and build identity
+
+The bottom-left label stays visible across menus, dialogs, deployment and combat. `package.json` is the version source; this release is **0.1.1**. For example, `v0.1.1 · local.12 · a1b2c3d` identifies local build 12 and its source commit. `+dirty` means the checkout had uncommitted changes when the build was prepared.
+
+`npm run dev`, `npm run build`, `npm run deploy`, and `npm run preview -- 4178` automatically generate `dist/build-info.json`. Starting `node scripts/preview-server.mjs 4178` directly does the same. Each invocation increments this checkout's `.local-build-number`; both generated files are ignored by Git. `npm run build:info` refreshes the identity when using another static server. A raw source checkout served without generation displays **Development build**.
+
+GitHub Actions uses `github.<run number>.<attempt>` instead, such as `github.42.2` for the second attempt of CI run 42. The run number advances automatically, and reruns have distinct attempt numbers. CI records the identity and full source SHA in the job summary and uploads `build-info.json` as an artifact. Local and GitHub counters are separate; version numbers advance deliberately when preparing a release.
+
+To increment the release version and keep the lockfile synchronized, run one of:
+
+```sh
+npm version patch --no-git-tag-version # 0.1.1 -> 0.1.2
+npm version minor --no-git-tag-version # 0.1.1 -> 0.2.0
+npm version major --no-git-tag-version # 0.1.1 -> 1.0.0
+```
+
+Commit `package.json` and `package-lock.json` with the release change. The npm version lifecycle also refreshes the local label. Build/deploy hooks embed the current version automatically; deployment remains the manual command described above.
 ## Experimental destruction branch
 
 Open `http://localhost:4174/ironwake/?lab=destruction` to opt into the destruction

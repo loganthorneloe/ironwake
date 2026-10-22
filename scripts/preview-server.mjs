@@ -1,7 +1,9 @@
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,sep,extname} from 'node:path';
+import {writeBuildInfo} from './build-info.mjs';
 const root=resolve(import.meta.dirname,'..'),port=Number(process.argv[2]||4175),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json'};
+await writeBuildInfo({root});
 createServer(async(req,res)=>{
  try{
   let path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
