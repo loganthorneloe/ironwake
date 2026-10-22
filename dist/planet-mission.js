@@ -50,7 +50,8 @@ function supportWave(w){
  const anchor=alive[o.wave%alive.length],ports=w.mission.portals.filter(p=>distance(p,anchor)>330&&distance(p,anchor)<1100).sort((a,b)=>distance(a,anchor)-distance(b,anchor));
  if(!ports.length)return;
  for(let i=0;i<amount;i++){const port=ports[(o.wave+i)%Math.min(6,ports.length)],type=(o.wave+i)%contract.tanks===0&&(o.phase>0||contract.id==='siegebreaker')?'tank':(o.wave+i)%3===0?'gunner':'drone';
- w.spawn.push({time:w.time+2.4+i*.13,type,zone:{x:port.x,y:port.y,exact:true,operation:true,variant:0}});}
+ const specialists=[[],['rammer','needle'],['mender','mortar','rammer'],['needle','mortar','mender','rammer'],['needle','mortar','rammer','mender']][o.phase]||[];const selected=specialists.length&&i%4===3?specialists[(o.wave+Math.floor(i/4))%specialists.length]:type;
+ w.spawn.push({time:w.time+2.4+i*.13,type:selected,zone:{x:port.x,y:port.y,exact:true,operation:true,variant:0}});}
  o.wave++;
 }
 
@@ -66,7 +67,7 @@ function bombard(w){const o=w.operation,alive=w.players.filter(p=>p.hp>0);if(!al
 export function stepOperation(w,dt,stats){if(w.mission.raid)return stepRound(w,dt,stats);const o=w.operation;if(!o||w.status!=='playing')return;const alive=w.players.filter(p=>p.hp>0);
  // Downed or disconnected carriers drop cells, so the objective cannot be stranded.
  for(const c of o.cells)if(c.state==='carried'&&!alive.some(p=>p.id===c.carrier)){const p=w.players.find(p=>p.id===c.carrier);if(p){c.x=p.x;c.y=p.y;}c.z=0;c.state='loose';c.carrier=null;}
- if(!alive.length){if(o.wipeAt==null)o.wipeAt=w.time;if(o.redeploys<=0){w.status='lost';return;}if(w.time-o.wipeAt>=7){o.redeploys--;for(const [i,p]of w.players.entries()){p.hp=stats(p.build).hp;p.x=o.checkpoint.x+i*55;p.y=o.checkpoint.y;p.altitude=150;p.revive=0;p.recoverUntil=w.time+5;}w.enemies=w.enemies.filter(e=>e.objective||e.elite||distance(e,o.checkpoint)>700);w.bullets=[];w.hazards=[];o.wipeAt=null;notice(w,'EMERGENCY REDEPLOY · '+o.redeploys+' remaining');}return;}o.wipeAt=null;
+ if(!alive.length){if(o.wipeAt==null)o.wipeAt=w.time;if(o.redeploys<=0){w.status='lost';return;}if(w.time-o.wipeAt>=7){o.redeploys--;for(const [i,p]of w.players.entries()){p.hp=stats(p.build).hp;p.x=o.checkpoint.x+i*55;p.y=o.checkpoint.y;p.altitude=150;p.revive=0;p.recoverUntil=w.time+5;}w.enemies=w.enemies.filter(e=>e.objective||e.elite||distance(e,o.checkpoint)>700);w.bullets=[];w.hazards=[];w.enemyHazards=[];o.wipeAt=null;notice(w,'EMERGENCY REDEPLOY · '+o.redeploys+' remaining');}return;}o.wipeAt=null;
  eliteArrival(w);if(w.time>=o.nextWave)supportWave(w);if(o.phase>0&&w.time>=o.nextStrike)bombard(w);
  if(o.phase===0){if(w.time>=45&&w.kills>=18+6*(w.players.length-1))enter(w,1,stats);}
  else if(o.phase===1){for(let i=0;i<3;i++){const battery=w.enemies.find(e=>e.id==='battery-'+i);if(battery)battery.locked=w.enemies.some(e=>e.objectiveKind==='relay'&&e.group===i&&e.hp>0);if(!battery||battery.hp<=0){if(!o.batteriesDown.includes(i))o.batteriesDown.push(i);}}if(o.batteriesDown.length===3)enter(w,2,stats);}

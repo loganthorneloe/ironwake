@@ -56,3 +56,4 @@ body[data-screen=garage] #assemblyStatus{grid-area:auto;bottom:auto;right:auto;w
   font:400 clamp(12px,1.1vw,15px)/1.5 var(--ui);
   letter-spacing:.01em; color:var(--phosphor);
 }
+.world-label.combo-label{font-size:19px;font-weight:900;letter-spacing:.12em;text-shadow:2px 2px 0 #102531,-2px -2px 0 #102531,0 0 8px #173647;border-bottom:2px solid currentColor;padding:2px 7px;background:#10232bba}

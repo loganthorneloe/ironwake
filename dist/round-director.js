@@ -35,7 +35,7 @@ export function stepRound(w,dt,stats){
  const o=w.operation,m=w.mission,spec=m.spec,pilots=alive(w),tune=missionTuning(m.sector-1,w.players.length);
  if(w.status!=='playing')return;
  for(const c of o.cells)if(c.state==='carried'&&!pilots.some(p=>p.id===c.carrier)){const p=w.players.find(p=>p.id===c.carrier);if(p){c.x=p.x;c.y=p.y;}c.state='loose';c.z=0;c.carrier=null;}
- if(!pilots.length){o.wipeAt??=w.time;if(o.redeploys<=0){w.status='lost';return;}if(w.time-o.wipeAt>=4){o.redeploys--;w.enemies=w.enemies.filter(e=>e.objective||e.elite);w.bullets=[];w.hazards=[];w.spawn=w.spawn.filter(s=>s.zone.raidTarget);w.players.forEach((p,i)=>{p.hp=stats(p.build).hp;p.x=m.entry.x+(i%2)*90;p.y=m.entry.y-Math.floor(i/2)*90;p.altitude=100;p.recoverUntil=w.time+4;});o.wipeAt=null;}return;}o.wipeAt=null;
+ if(!pilots.length){o.wipeAt??=w.time;if(o.redeploys<=0){w.status='lost';return;}if(w.time-o.wipeAt>=4){o.redeploys--;w.enemies=w.enemies.filter(e=>e.objective||e.elite);w.bullets=[];w.hazards=[];w.enemyHazards=[];w.spawn=w.spawn.filter(s=>s.zone.raidTarget);w.players.forEach((p,i)=>{p.hp=stats(p.build).hp;p.x=m.entry.x+(i%2)*90;p.y=m.entry.y-Math.floor(i/2)*90;p.altitude=100;p.recoverUntil=w.time+4;});o.wipeAt=null;}return;}o.wipeAt=null;
  if(o.phase===1){const onPad=w.time>=o.shipAt&&pilots.every(p=>distance(p,m.exit)<200&&(p.altitude||0)<50);o.extraction=onPad?o.extraction+dt:0;w.extractTime=o.extraction;if(o.extraction>=3){w.status='won';w.cleared=3;w.zoneIndex=3;}return;}
  if(w.time>=o.nextWave)wave(w);o.overtime=w.time>spec.minutes*60+45;
  if(m.sector>=4&&w.time>=o.nextStrike){for(const p of pilots.slice(0,m.sector>=8?4:2))w.hazards.push({x:p.x,y:p.y,r:100+5*m.sector,time:2.6});o.nextStrike=w.time+Math.max(7,19-m.sector);}

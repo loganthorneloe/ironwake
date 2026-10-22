@@ -3,6 +3,22 @@ import{partChassis}from './part-designs.js';
 const noiseBuffers=new WeakMap();
 function noiseBuffer(ctx){if(!noiseBuffers.has(ctx)){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate),d=b.getChannelData(0);let seed=9347;for(let i=0;i<d.length;i++){seed=(seed*1664525+1013904223)>>>0;d[i]=seed/2147483648-1;}noiseBuffers.set(ctx,b);}return noiseBuffers.get(ctx);}
 export function createSoundBus(ctx){const bus=ctx.createGain(),compress=ctx.createDynamicsCompressor();bus.gain.value=.21;compress.threshold.value=-18;compress.knee.value=12;compress.ratio.value=5;compress.attack.value=.003;compress.release.value=.15;bus.connect(compress);compress.connect(ctx.destination);return bus;}
+// Two short layers per cue. Stereo/distance come from the listener's real view.
+export const ENEMY_TELLS={
+ hunter:[180,420,.13,'sawtooth',1400],wisp:[760,1120,.09,'sine',3800],
+ scarab:[210,140,.17,'triangle',1000],rammer:[95,320,.23,'sawtooth',750],
+ needle:[1350,2200,.16,'sine',5000],mortar:[340,160,.2,'square',1600],
+ mender:[520,780,.18,'sine',3000],siege:[80,190,.25,'sawtooth',650],
+ rush:[390,650,.14,'triangle',2200],teamBreak:[1850,540,.16,'triangle',4200],teamFinish:[660,1320,.24,'sine',5200],
+ bite:[280,110,.08,'sawtooth',1800],sweep:[420,880,.18,'triangle',2500],stomp:[75,45,.22,'triangle',550],siegeBarrage:[240,720,.24,'square',1900],
+};
+export function playEnemyTell(ctx,bus,event){
+ const p=ENEMY_TELLS[event.cue];if(!p||ctx.state!=='running')return;
+ const [frequency,end,duration,type,cutoff]=p,gain=Math.max(0,Math.min(1,event.gain??1)),pan=Math.max(-1,Math.min(1,event.pan||0));
+ voice(ctx,bus,{frequency,end,duration,type,cutoff,to:Math.min(end*2,6000),gain:.2*gain,pan,attack:.007});
+ if(event.cue==='mender'||event.cue==='rush'||event.cue==='teamFinish')voice(ctx,bus,{frequency:frequency*1.5,end:end*1.5,duration:duration*.75,type:'sine',cutoff:6000,to:2000,gain:.12*gain,pan,delay:.055});
+ else voice(ctx,bus,{noise:true,duration:.055,gain:.13*gain,cutoff,to:280,filter:'bandpass',pan});
+}
 function voice(ctx,bus,{frequency=100,end=45,duration=.15,gain=.3,type='triangle',delay=0,noise=false,filter='lowpass',cutoff=2400,to=180,pan=0,attack=.003}){const now=ctx.currentTime+delay,source=noise?ctx.createBufferSource():ctx.createOscillator(),amp=ctx.createGain(),eq=ctx.createBiquadFilter(),stereo=ctx.createStereoPanner();if(noise){source.buffer=noiseBuffer(ctx);}else{source.type=type;source.frequency.setValueAtTime(frequency,now);source.frequency.exponentialRampToValueAtTime(Math.max(20,end),now+duration);}eq.type=filter;eq.frequency.setValueAtTime(cutoff,now);eq.frequency.exponentialRampToValueAtTime(Math.max(30,to),now+duration);eq.Q.value=filter==='bandpass'?1.6:.65;stereo.pan.value=pan;amp.gain.setValueAtTime(0,now);amp.gain.linearRampToValueAtTime(gain,now+Math.min(attack,duration*.2));amp.gain.exponentialRampToValueAtTime(.0001,now+duration);source.connect(eq);eq.connect(amp);amp.connect(stereo);stereo.connect(bus);if(noise)source.start(now,Math.random());else source.start(now);source.stop(now+duration+.015);source.onended=()=>{source.disconnect();eq.disconnect();amp.disconnect();stereo.disconnect();};}
 export function playWeaponSound(ctx,bus,id,variation=0){const tune=1+Math.sin(variation*2.399)*.035,pan=Math.sin(variation*1.7)*.09;const tone=(frequency,end,duration,gain,type='triangle',delay=0)=>voice(ctx,bus,{frequency:frequency*tune,end:end*tune,duration,gain,type,delay,pan,cutoff:6000,to:1200});const hit=(duration,gain,cutoff,to=150,delay=0,filter='lowpass')=>voice(ctx,bus,{noise:true,duration,gain,cutoff,to,delay,filter,pan});
  switch(id){
