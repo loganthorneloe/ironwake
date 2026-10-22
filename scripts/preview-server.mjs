@@ -1,7 +1,7 @@
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,sep,extname} from 'node:path';
-const root=resolve(import.meta.dirname,'..'),port=Number(process.argv[2]||4175),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json'};
+const root=resolve(import.meta.dirname,'..'),port=Number(process.argv[2]||4175),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.wav':'audio/wav'};
 createServer(async(req,res)=>{
  try{
   let path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);

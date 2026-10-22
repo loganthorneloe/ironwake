@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IRONWAKE · Pilot voice audition</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#101719;color:#e9ece4}
+  body{max-width:1050px;margin:auto;padding:40px 24px}a{color:#a4eedb}
+  header{border-bottom:1px solid #64756b;padding-bottom:24px;margin-bottom:24px}
+  small{color:#edb77f;letter-spacing:3px}h1{font-size:clamp(32px,5vw,56px);margin:12px 0}
+  p{max-width:720px;line-height:1.6;color:#b7c6bf}audio{width:min(100%,600px);margin:12px 0}
+  #lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px}
+  article{padding:16px;border:1px solid #43544d;background:#17231f}h2{font-size:14px;text-transform:uppercase;color:#a4eedb;margin:0 0 10px}
+  button{display:block;text-align:left;width:100%;margin-top:8px;min-height:44px;padding:10px;background:#22362d;border:1px solid #597c68;color:#fff;cursor:pointer;font:inherit}
+  button:hover,button:focus-visible{background:#38543d;outline:2px solid #a4eedb}
+  #current{min-height:24px;color:#edb77f}footer{margin:24px 0;color:#b7c6bf}
+</style>
+<header>
+  <small>IRONWAKE / PILOT COMMS 01</small>
+  <h1 id="voiceHeading">Rook. Ready to launch.</h1>
+  <p>Original English mecha callouts generated with OmniVoice. Select a take to audition it. In combat, cooldowns limit repetition and danger alerts override attack barks.</p>
+  <a href="/ironwake/">Play the game ↗</a>
+  <p><label>Base pilot voice <select id="voiceProfile"></select></label></p>
+  <div id="current" role="status" aria-live="polite">Select a callout.</div>
+  <audio id="player" controls preload="none"></audio>
+</header>
+<main id="lines"></main>
+<footer>Local development audition · This page is excluded from deployed game assets.</footer>
+<script type="module">
+  const url=new URL('../dist/audio/pilot/callouts.json',import.meta.url);
+  const catalog=await fetch(url).then(r=>r.json());
+  const picker=document.querySelector('#voiceProfile');
+  for(const [id,profile] of Object.entries(catalog.profiles)){
+    const option=document.createElement('option');option.value=id;option.textContent=profile.name+' · '+profile.description;picker.append(option);
+  }
+  function render(){
+  const id=picker.value,profile=catalog.profiles[id];
+  document.querySelector('#player').pause();document.querySelector('#player').removeAttribute('src');
+  document.querySelector('#voiceHeading').textContent=profile.name+'. Ready to launch.';
+  document.querySelector('#lines').replaceChildren();
+  for(const [key,event] of Object.entries(catalog.events)){
+    const article=document.createElement('article'),title=document.createElement('h2');
+    title.textContent=key;article.append(title);
+    for(const line of event.lines){
+      const text=line.text.replaceAll('{pilot}',profile.name);
+      const button=document.createElement('button');button.textContent='▶ '+text;
+      button.onclick=()=>{const player=document.querySelector('#player');player.src=new URL(id+'/'+line.id+'.wav',url);document.querySelector('#current').textContent=profile.name+' / '+key.toUpperCase()+' / '+text;player.play().catch(()=>{});};
+      article.append(button);
+    }
+    document.querySelector('#lines').append(article);
+  }
+  }
+  picker.onchange=render;render();
+</script>
+</html>

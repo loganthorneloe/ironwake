@@ -1,0 +1,335 @@
+{
+  "version": 2,
+  "events": {
+    "deploy": {
+      "priority": 20,
+      "cooldown": 60,
+      "lines": [
+        {
+          "id": "launch",
+          "text": "{pilot}, launching! Let's light it up!"
+        }
+      ]
+    },
+    "carbine": {
+      "priority": 30,
+      "cooldown": 14,
+      "lines": [
+        {
+          "id": "pulse-volley",
+          "text": "Pulse volley!",
+          "speed": 1
+        }
+      ]
+    },
+    "scatter": {
+      "priority": 35,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "prism-break",
+          "text": "Prism break!"
+        }
+      ]
+    },
+    "rail": {
+      "priority": 50,
+      "cooldown": 9,
+      "lines": [
+        {
+          "id": "rail-piercer",
+          "text": "Rail piercer!"
+        },
+        {
+          "id": "straight-through",
+          "text": "Straight through!"
+        }
+      ]
+    },
+    "launcher": {
+      "priority": 45,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "meteor-salvo",
+          "text": "Meteor salvo!"
+        }
+      ]
+    },
+    "plasma": {
+      "priority": 40,
+      "cooldown": 12,
+      "lines": [
+        {
+          "id": "nova-burst",
+          "text": "Nova burst!"
+        }
+      ]
+    },
+    "rotary": {
+      "priority": 30,
+      "cooldown": 16,
+      "lines": [
+        {
+          "id": "photon-storm",
+          "text": "Photon storm!"
+        }
+      ]
+    },
+    "phaser": {
+      "priority": 35,
+      "cooldown": 14,
+      "lines": [
+        {
+          "id": "soul-beam",
+          "text": "Soul beam!"
+        }
+      ]
+    },
+    "flamer": {
+      "priority": 35,
+      "cooldown": 14,
+      "lines": [
+        {
+          "id": "inferno-sweep",
+          "text": "Inferno sweep!",
+          "speed": 1
+        }
+      ]
+    },
+    "dynamo": {
+      "priority": 50,
+      "cooldown": 9,
+      "lines": [
+        {
+          "id": "dynamo-breaker",
+          "text": "Dynamo breaker!"
+        }
+      ]
+    },
+    "blade": {
+      "priority": 45,
+      "cooldown": 8,
+      "lines": [
+        {
+          "id": "radiant-slash",
+          "text": "Radiant slash!"
+        },
+        {
+          "id": "cut-through",
+          "text": "I'll cut through!"
+        }
+      ]
+    },
+    "lance": {
+      "priority": 45,
+      "cooldown": 9,
+      "lines": [
+        {
+          "id": "heaven-piercer",
+          "text": "Heaven piercer!"
+        }
+      ]
+    },
+    "hammer": {
+      "priority": 50,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "gravity-break",
+          "text": "Gravity break!"
+        }
+      ]
+    },
+    "claws": {
+      "priority": 40,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "thunder-fang",
+          "text": "Thunder fang!"
+        }
+      ]
+    },
+    "scythe": {
+      "priority": 45,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "crescent-reaper",
+          "text": "Crescent reaper!"
+        }
+      ]
+    },
+    "guard": {
+      "priority": 40,
+      "cooldown": 16,
+      "lines": [
+        {
+          "id": "hold-the-line",
+          "text": "You won't get past me!"
+        }
+      ]
+    },
+    "dash": {
+      "priority": 25,
+      "cooldown": 12,
+      "lines": [
+        {
+          "id": "flash-step",
+          "text": "Flash step!"
+        },
+        {
+          "id": "too-slow",
+          "text": "Too slow!"
+        }
+      ]
+    },
+    "flight": {
+      "priority": 20,
+      "cooldown": 25,
+      "lines": [
+        {
+          "id": "skyward",
+          "text": "Skyward!"
+        }
+      ]
+    },
+    "emp": {
+      "priority": 75,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "thunder-collapse",
+          "text": "Thunder collapse!"
+        },
+        {
+          "id": "break-their-circuit",
+          "text": "Break their circuit!"
+        }
+      ]
+    },
+    "shield": {
+      "priority": 75,
+      "cooldown": 12,
+      "lines": [
+        {
+          "id": "aegis-unfold",
+          "text": "Aegis, unfold!"
+        }
+      ]
+    },
+    "repair": {
+      "priority": 75,
+      "cooldown": 14,
+      "lines": [
+        {
+          "id": "second-wind",
+          "text": "Second wind! Stay in the fight!"
+        }
+      ]
+    },
+    "critical": {
+      "priority": 85,
+      "cooldown": 35,
+      "lines": [
+        {
+          "id": "not-finished",
+          "text": "Armor's breaking! I'm not finished!"
+        }
+      ]
+    },
+    "downed": {
+      "priority": 95,
+      "cooldown": 10,
+      "lines": [
+        {
+          "id": "pilot-down",
+          "text": "{pilot} is down! Cover me!"
+        }
+      ]
+    },
+    "revived": {
+      "priority": 80,
+      "cooldown": 12,
+      "lines": [
+        {
+          "id": "back-in",
+          "text": "I'm back in! I owe you one!"
+        }
+      ]
+    },
+    "heavy": {
+      "priority": 70,
+      "cooldown": 25,
+      "lines": [
+        {
+          "id": "heavy-incoming",
+          "text": "Heavy incoming! Stand your ground!"
+        }
+      ]
+    },
+    "kill": {
+      "priority": 15,
+      "cooldown": 24,
+      "lines": [
+        {
+          "id": "target-broken",
+          "text": "Target broken! Keep pushing!"
+        }
+      ]
+    },
+    "won": {
+      "priority": 100,
+      "cooldown": 60,
+      "lines": [
+        {
+          "id": "our-victory",
+          "text": "That's our victory! Nice work, squad!"
+        }
+      ]
+    },
+    "lost": {
+      "priority": 100,
+      "cooldown": 60,
+      "lines": [
+        {
+          "id": "regroup",
+          "text": "We're pulling back. Next time, we break through!"
+        }
+      ]
+    }
+  },
+  "generation": {
+    "model": "k2-fsa/OmniVoice",
+    "modelRevision": "c5fdb5ccb189668d56333f77ba2629f4cd7535f4",
+    "package": "omnivoice==0.2.1",
+    "sampleRate": 24000
+  },
+  "profiles": {
+    "rook": {
+      "name": "Rook",
+      "description": "Bright female voice · American accent",
+      "instruct": "female, young adult, moderate pitch, american accent",
+      "referenceText": "All systems online! Stay with me, squad! We're breaking through! This is our fight, and I'm bringing everyone home!",
+      "seed": 4729,
+      "speed": 1.12
+    },
+    "flint": {
+      "name": "Flint",
+      "description": "Low male voice · American accent",
+      "instruct": "male, young adult, low pitch, american accent",
+      "referenceText": "All systems online! Stay with me, squad! We're breaking through! This is our fight, and I'm bringing everyone home!",
+      "seed": 8103,
+      "speed": 1.08
+    },
+    "echo": {
+      "name": "Echo",
+      "description": "Clear female voice · British accent",
+      "instruct": "female, young adult, british accent",
+      "referenceText": "All systems online! Stay with me, squad! We're breaking through! This is our fight, and I'm bringing everyone home!",
+      "seed": 9451,
+      "speed": 1.1
+    }
+  }
+}
