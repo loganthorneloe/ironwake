@@ -1,0 +1,37 @@
+#sceneFlow{--launch-ink:#eaf4dd;--launch-accent:#d7ff76;position:fixed;inset:0;z-index:80;pointer-events:none;color:var(--launch-ink);font-family:var(--ui,system-ui)}
+#sceneFlow [hidden]{display:none!important}
+.scene-shutter{position:absolute;inset:0;background:#111c20;display:grid;place-items:center;overflow:hidden;border-right:12px solid var(--launch-accent)}
+.scene-shutter:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(-24deg,transparent 0 70px,#d7ff760b 71px 73px)}
+.deployment-card{position:absolute;inset:0;background:#0b1419;pointer-events:auto;overflow:hidden;display:flex;flex-direction:column;justify-content:center;padding:clamp(24px,7vw,110px);isolation:isolate}
+.deployment-card:before{content:'';position:absolute;z-index:-1;inset:0;background:linear-gradient(115deg,transparent 48%,#d7ff760d 48.1% 48.4%,transparent 48.5%),repeating-linear-gradient(-24deg,transparent 0 130px,#d7ff7606 131px 133px),radial-gradient(ellipse at 85% 45%,#334c36 0,transparent 65%)}
+.deployment-code{color:var(--launch-accent);font:700 12px ui-monospace,monospace;letter-spacing:.24em;margin-bottom:clamp(28px,8vh,90px)}
+.deployment-mode{font:12px ui-monospace,monospace;letter-spacing:.15em;color:#aec1bc}
+#sceneFlow .deployment-mission{font-size:clamp(36px,6.5vw,92px);font-weight:900;font-style:italic;letter-spacing:-.05em;line-height:1.02;max-width:1000px;margin:16px 0 24px;text-transform:uppercase;text-wrap:balance;border-left:6px solid var(--launch-accent);padding-left:22px}
+.deployment-squad{font:11px ui-monospace,monospace;letter-spacing:.1em;color:#becfc5}
+.deployment-loading{margin-top:clamp(30px,8vh,80px);width:min(560px,100%)}
+.deployment-steps{display:flex;justify-content:space-between;gap:12px;font:10px ui-monospace,monospace;letter-spacing:.08em;color:#74857f}
+.deployment-steps [data-state=active]{color:var(--launch-ink)}
+.deployment-steps [data-state=done]{color:var(--launch-accent)}
+.deployment-steps [data-state=done]:before{content:'✓ '}
+.deployment-progress{display:block;width:100%;height:3px;margin:12px 0 16px;appearance:none;border:0;background:#304039;accent-color:var(--launch-accent)}
+.deployment-progress::-webkit-progress-bar{background:#304039}.deployment-progress::-webkit-progress-value{background:var(--launch-accent)}
+.deployment-status{font:12px ui-monospace,monospace;color:#d2dfd6;min-height:2em}
+.deployment-actions{position:absolute;bottom:max(24px,env(safe-area-inset-bottom));right:clamp(24px,5vw,80px);display:flex;gap:12px}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-actions,#sceneFlow[data-phase=waiting] .deployment-actions{bottom:max(calc(7vh + 12px),env(safe-area-inset-bottom))}
+#sceneFlow button{background:#101c20d9;color:var(--launch-ink);border:1px solid #a8c0ab66;padding:12px 18px;font:11px ui-monospace,monospace;cursor:pointer;min-height:42px}
+#sceneFlow button:hover,#sceneFlow button:focus-visible{background:var(--launch-accent);color:#101b19;outline:2px solid var(--launch-ink);outline-offset:3px}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-card,#sceneFlow[data-phase=waiting] .deployment-card{background:transparent;justify-content:flex-end;padding-bottom:clamp(110px,18vh,200px)}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-card:before,#sceneFlow[data-phase=waiting] .deployment-card:before{background:linear-gradient(0deg,#071014e6,transparent 65%);z-index:-1}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]):before,#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]):after,#sceneFlow[data-phase=waiting]:before,#sceneFlow[data-phase=waiting]:after{content:'';position:absolute;left:0;right:0;height:7vh;background:#080f13;z-index:1;pointer-events:none}
+#sceneFlow:before{top:0}#sceneFlow:after{bottom:0}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-code,#sceneFlow[data-phase=waiting] .deployment-code{display:none}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-mode,#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-squad,#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-loading{display:none}
+#sceneFlow[data-phase=waiting] .deployment-mode,#sceneFlow[data-phase=waiting] .deployment-squad{display:none}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-loading,#sceneFlow[data-phase=waiting] .deployment-loading{margin-top:12px}
+#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-steps,#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) progress,#sceneFlow[data-phase=waiting] .deployment-steps,#sceneFlow[data-phase=waiting] progress{display:none}
+#sceneFlow[data-phase=reveal][data-motion=full] .deployment-mission{animation:mission-snap .22s cubic-bezier(.1,.8,.2,1) both}
+#game[data-arrival] #battle{filter:grayscale(1) brightness(.7)}
+#game[data-arrival]>:not(#battle){visibility:hidden;pointer-events:none}
+@keyframes mission-snap{from{transform:translateX(-45px);opacity:0}to{transform:translateX(0);opacity:1}}
+@media(max-width:600px){.deployment-code{margin-bottom:30px}.deployment-loading{margin-top:30px}.deployment-steps{font-size:9px;letter-spacing:0}.deployment-squad{font-size:10px}#sceneFlow .deployment-mission{padding-left:14px;border-left-width:4px}.deployment-actions{left:24px;right:24px;justify-content:flex-end}#sceneFlow:is([data-phase=reveal],[data-phase=insertion],[data-phase=holding]) .deployment-card,#sceneFlow[data-phase=waiting] .deployment-card{padding-bottom:140px}}
+@media(prefers-reduced-motion:reduce){#sceneFlow .deployment-mission{animation:none!important}}

@@ -45,7 +45,7 @@ The host persists up to four named pilot profiles. Callsigns remain cosmetic, no
 - `campaign-view.js` / `mission-route.css`: route, briefing, drills, refits, contracts and squad readiness.
 - `sortie-progression.js`: reused salvage and combat modifiers; legacy combat-install input explicitly rejects requests.
 
-Chassis scale, alternate part tiers, weapon origins, mounted cargo and special-effect pools remain shared with normal gameplay. The room prefix is `ironwake-campaign-rounds-v1-` on both endpoints. A future destruction merge must preserve these mission bounds, host-owned goals and upgrade timing.
+Chassis scale, alternate part tiers, weapon origins, mounted cargo and special-effect pools remain shared with normal gameplay. The room prefix is `ironwake-cinematic-v2-` on both endpoints. A future destruction merge must preserve these mission bounds, host-owned goals and upgrade timing.
 
 ## Verification and remaining playtests
 
