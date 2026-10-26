@@ -1,0 +1,69 @@
+// Cinderfall field technology. Every effect is additive; simulation owns application and caps.
+const tech=(id,name,role,detail,short,color,icon,effects,rarity='standard',maxStacks=3)=>({id,name,role,detail,short,color,icon,rarity,maxStacks,effects});
+const catalogue=entries=>Object.fromEntries(entries.map(entry=>[entry.id,entry]));
+export const FIELD_UPGRADES=catalogue([
+ tech('power','Weapon overdrive','ASSAULT','Increase all weapon, dash and special damage by 12% per stack.','+12% all damage','#ee7950','OVR',{damage:.12}),
+ tech('breaker','Siege rounds','BREACH','Deal 20% more damage to armored scarabs, siege mechs and mission targets.','+20% heavy damage','#ffbd69','BRK',{heavyDamage:.2}),
+ tech('plating','Reactive armor','SURVIVAL','Reduce incoming damage by 10% per stack. Total field reduction caps at 65%.','10% damage reduction','#b3c9bd','ARM',{damageReduction:.1}),
+ tech('repair','Recovery mesh','RECOVERY','After seven seconds without damage, repair 2 extra hull per second.','+2 recovery / sec','#8be6b6','REC',{recovery:2}),
+ tech('thrusters','Vector boosters','MOBILITY','Increase movement and lift by 10%; recharge dash 10% faster.','+10% speed, lift, dash recharge','#74adca','VEC',{moveSpeed:.1,lift:.1,dashRecharge:.1}),
+ tech('capacitor','Special capacitor','SYSTEMS','Recharge the equipped special 25% faster.','+25% special recharge','#b698c1','CAP',{specialRecharge:.25}),
+ tech('servo','Accelerator servos','CYCLING','Cycle both hand weapons 10% faster, including melee recovery.','+10% weapon cycling','#ffd06a','SRV',{fireRate:.1}),
+ tech('ballistics','Coil accelerator','BALLISTICS','Launch projectiles 20% faster and deal 6% more ranged damage.','+20% shot speed / +6% ranged','#74cfe0','COIL',{projectileSpeed:.2,rangedDamage:.06}),
+ tech('warhead','Blast geometry','AREA','Expand projectile explosions and melee shockwaves by 15%.','+15% blast radius','#f4ac70','BLST',{area:.15}),
+ tech('targeting','Weakpoint solver','PRECISION','Gain 6% critical-hit chance and 15% more critical-hit damage.','+6% crit / +15% crit damage','#ffe0a0','AIM',{critChance:.06,critDamage:.15}),
+ tech('siphon','Repair siphon','SUSTAIN','Repair hull equal to 1.5% of damage dealt.','1.5% damage returned as hull','#8bd8b3','SIP',{lifesteal:.015}),
+ tech('brawler','Impact actuators','MELEE','Deal 18% more melee damage and 10% more dash damage.','+18% melee / +10% dash','#ee886b','ACT',{meleeDamage:.18,dashDamage:.1}),
+ tech('aerial','Aerial stabilizers','FLIGHT','Deal 15% more damage while airborne and gain 10% lift.','+15% airborne damage / +10% lift','#9dd7f3','AIR',{airborneDamage:.15,lift:.1}),
+ tech('conductor','Arc coupling','CHAIN','Hits have an 8% chance to arc to a nearby exposed hostile for 35% damage.','8% chance of chain arc','#91bfff','ARC',{chainChance:.08,chainDamage:.35}),
+ tech('thermal','Thermal injector','IGNITION','Hits have a 10% ignition chance. Increase burn damage by 20%.','10% ignite / +20% burn','#fa956b','HEAT',{burnChance:.1,burnDamage:.2}),
+ tech('execution','Cull protocol','FINISHER','Deal 25% more damage to targets below 30% hull.','+25% damage to weakened targets','#e5b2c8','FIN',{executeDamage:.25}),
+ tech('hull','Bulkhead lattice','HULL','Increase maximum hull by 15%; gain the added hull immediately.','+15% maximum hull','#c4d4bd','HULL',{maxHull:.15}),
+ tech('recon','Combat telemetry','GROWTH','Earn 15% more combat experience and increase pickup reach by 30m.','+15% XP / +30m pickup reach','#b2d5a6','TEL',{xpGain:.15,pickupRadius:30})
+]);
+export const FIELD_ITEMS=catalogue([
+ tech('gyro','Counterweight gyro','SALVAGE TECH','A reclaimed gimbal adds 8% movement speed and 10% precision damage.','+8% speed / +10% precision','#74adca','GYR',{moveSpeed:.08,precisionDamage:.1}),
+ tech('spall','Spall liner','SALVAGE TECH','Ceramic shielding reduces damage by 6% and adds 8% maximum hull.','6% reduction / +8% hull','#b3c9bd','SPL',{damageReduction:.06,maxHull:.08}),
+ tech('ferrite','Ferrite collector','SALVAGE TECH','Magnetic vanes pull pickups from 60m farther away and earn 12% more salvage.','+60m reach / +12% salvage','#c9c597','FER',{pickupRadius:60,salvageGain:.12}),
+ tech('redline','Redline governor','SALVAGE TECH','Cycle weapons 12% faster while reducing maximum hull by 5%.','+12% cycling / -5% hull','#f19b79','RED',{fireRate:.12,maxHull:-.05}),
+ tech('bloodpump','Scarab repair pump','SALVAGE TECH','Destroying a hostile repairs 3 hull.','+3 hull per hostile defeat','#9ce0b2','PMP',{killHeal:3}),
+ tech('mirror','Ablative mirror','SALVAGE TECH','Reflect 12 damage to nearby attackers whenever you take a hit.','12 retaliatory damage','#c9d6e1','MIR',{thorns:12}),
+ tech('razor','Razor flywheel','SALVAGE TECH','Deal 20% more dash damage and recharge dash 12% faster.','+20% dash / +12% dash recharge','#f6c27b','RAZ',{dashDamage:.2,dashRecharge:.12}),
+ tech('lens','Needle optic','SALVAGE TECH','Deal 20% more precision damage and gain 4% critical chance.','+20% precision / +4% crit','#f6dda6','LEN',{precisionDamage:.2,critChance:.04}),
+ tech('resonator','Pulse resonator','SALVAGE TECH','Deal 18% more damage to stunned targets and expand blasts by 8%.','+18% vs stunned / +8% blast','#c4a4e3','RES',{stunnedDamage:.18,area:.08}),
+ tech('nozzle','Venturi nozzle','SALVAGE TECH','Gain 18% lift and deal 10% more damage in flight.','+18% lift / +10% aerial damage','#8ccfed','VNT',{lift:.18,airborneDamage:.1}),
+ tech('igniter','Afterburn igniter','SALVAGE TECH','Add 8% ignition chance and 25% burn damage.','8% ignite / +25% burn','#f5a071','IGN',{burnChance:.08,burnDamage:.25}),
+ tech('relaycoil','Recovered relay coil','SALVAGE TECH','Gain 5% arc chance and 25% chain damage.','5% arc chance / +25% arc damage','#97c8f1','RLC',{chainChance:.05,chainDamage:.25}),
+ tech('medic','Mender filament','SALVAGE TECH','Recovery repairs 2 extra hull per second; specials recharge 10% faster.','+2 recovery / +10% special recharge','#a9dcb7','MND',{recovery:2,specialRecharge:.1}),
+ tech('reactor','Auxiliary reactor','SALVAGE TECH','Equipped specials gain 18% power and 10% faster recharge.','+18% special power / +10% recharge','#bda7dc','AUX',{specialPower:.18,specialRecharge:.1}),
+ tech('laststand','Emergency overdrive','SALVAGE TECH','Below 35% hull, deal 25% more damage.','+25% damage at critical hull','#ef927b','SOS',{lowHullDamage:.25}),
+ tech('anvil','Siege counterweight','SALVAGE TECH','Deal 16% more heavy-target damage and 12% more melee damage.','+16% heavy / +12% melee','#d8bf9e','ANV',{heavyDamage:.16,meleeDamage:.12}),
+ tech('aegis','Aegis inverter','SALVAGE TECH','Strengthen shield protection by 12% and add 10% maximum hull.','+12% shielding / +10% hull','#a9cfd1','AEG',{shieldPower:.12,maxHull:.1},'advanced',2),
+ tech('blackbox','Warden black box','SALVAGE TECH','Earn 20% more XP and gain 25% critical damage.','+20% XP / +25% critical damage','#e0c790','BOX',{xpGain:.2,critDamage:.25},'advanced',2)
+]);
+const relay=(id,name,role,detail,short,color,icon,effects,duration=60,cost=0)=>({...tech(id,name,role,detail,short,color,icon,effects,'resonant',1),duration,cost});
+export const FIELD_RELAYS=catalogue([
+ relay('assault','Assault relay','RESONANCE RELAY','Synchronize weapons for +30% damage for 60 seconds.','+30% damage · 60s','#ee7950','ATK',{damage:.3}),
+ relay('bastion','Bastion relay','RESONANCE RELAY','Resonant plating reduces incoming damage by 30% for 60 seconds.','30% damage reduction · 60s','#b3c9bd','DEF',{damageReduction:.3}),
+ relay('velocity','Velocity relay','RESONANCE RELAY','Gain 30% movement and lift, plus 40% faster dash recharge for 60 seconds.','+30% mobility / +40% dash · 60s','#74adca','VEL',{moveSpeed:.3,lift:.3,dashRecharge:.4}),
+ relay('mender','Mender relay','RESONANCE RELAY','Restore 35% of maximum hull now and gain +6 recovery per second for 60 seconds.','35% repair / +6 recovery · 60s','#9de1b6','MED',{recovery:6},60),
+ relay('capacitor','Capacitor relay','RESONANCE RELAY','Recharge specials 75% faster and increase their power by 25% for 60 seconds.','+75% special recharge / +25% power · 60s','#b698c1','CAP',{specialRecharge:.75,specialPower:.25}),
+ relay('barrage','Barrage relay','RESONANCE RELAY','Increase hand-weapon cycling by 30% for 60 seconds.','+30% cycling · 60s','#ffd06a','BAR',{fireRate:.3}),
+ relay('siege','Siege relay','RESONANCE RELAY','Deal 45% more damage to heavy hostiles and objectives for 60 seconds.','+45% heavy damage · 60s','#edb77f','SGE',{heavyDamage:.45}),
+ relay('deadeye','Deadeye relay','RESONANCE RELAY','Gain 20% critical chance and 35% precision damage for 60 seconds.','+20% crit / +35% precision · 60s','#efdaa6','EYE',{critChance:.2,precisionDamage:.35}),
+ relay('inferno','Thermal relay','RESONANCE RELAY','Gain 35% ignition chance and 60% burn damage for 60 seconds.','35% ignite / +60% burn · 60s','#fa956b','HOT',{burnChance:.35,burnDamage:.6}),
+ relay('storm','Arc relay','RESONANCE RELAY','Gain 25% arc chance and 60% chain damage for 60 seconds.','25% arc chance / +60% arcs · 60s','#9dbff1','ARC',{chainChance:.25,chainDamage:.6}),
+ relay('brawler','Impact relay','RESONANCE RELAY','Increase melee damage by 40% and dash damage by 50% for 60 seconds.','+40% melee / +50% dash · 60s','#efa17e','IMP',{meleeDamage:.4,dashDamage:.5}),
+ relay('harvest','Telemetry relay','RESONANCE RELAY','Earn 40% more combat XP and salvage for 75 seconds.','+40% XP and salvage · 75s','#c4d69b','DAT',{xpGain:.4,salvageGain:.4},75),
+ relay('siphon','Siphon relay','RESONANCE RELAY','Return 5% of damage dealt as hull and repair 5 hull per kill for 60 seconds.','5% lifesteal / +5 kill repair · 60s','#9cddc0','SIP',{lifesteal:.05,killHeal:5}),
+ relay('colossus','Bulkhead relay','RESONANCE RELAY','Add 12% maximum hull for the rest of this sortie. New hull is repaired immediately.','+12% maximum hull · sortie','#c0cbb3','BLK',{maxHull:.12},0,16),
+ relay('avenger','Reprisal relay','RESONANCE RELAY','Return 30 damage to close attackers and deal 40% more damage at low hull for 60 seconds.','30 retaliation / +40% crisis damage · 60s','#dfb6c3','RPR',{thorns:30,lowHullDamage:.4}),
+ relay('executioner','Cull relay','RESONANCE RELAY','Deal 60% more damage to weakened targets and 30% more to stunned targets for 60 seconds.','+60% finisher / +30% vs stun · 60s','#d9a4d0','CUL',{executeDamage:.6,stunnedDamage:.3}),
+ relay('uplink','Uplink relay','RESONANCE RELAY','Gain 10% weapon damage and 15% experience for the rest of this sortie.','+10% damage / +15% XP · sortie','#abcfc9','LNK',{damage:.1,xpGain:.15},0,20),
+ relay('overload','Overload relay','RESONANCE RELAY','Increase blast radius by 35%, projectile speed by 25% and special power by 25% for 60 seconds.','+35% blasts / +25% shot speed and power · 60s','#b9a5da','OVL',{area:.35,projectileSpeed:.25,specialPower:.25})
+]);
+export const FIELD_MODULES=FIELD_UPGRADES;
+export const FIELD_LIMITS={modules:18,upgrades:36,items:36};
+export function cleanFieldIds(values,catalogue,limit=36){const result=[],counts={};for(const id of(Array.isArray(values)?values:[]).slice(0,144)){if(typeof id!=='string'||!Object.hasOwn(catalogue,id)||(counts[id]||0)>=catalogue[id].maxStacks)continue;result.push(id);counts[id]=(counts[id]||0)+1;if(result.length>=limit)break;}return result;}
+export const cleanFieldUpgrades=values=>cleanFieldIds(values,FIELD_UPGRADES,FIELD_LIMITS.upgrades);
+export const cleanFieldItems=values=>cleanFieldIds(values,FIELD_ITEMS,FIELD_LIMITS.items);

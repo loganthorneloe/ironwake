@@ -67,14 +67,14 @@ export function stepDestructionMission(w,dt,stats,onBlast){
  stepDestruction(w,onBlast);const s=w.siege;
  if(w.mission.variant!=='level'){
   // A no-pressure proving ground: destroyed geometry resets only on a new run.
-  for(const p of w.players)if(p.hp<=0){p.hp=stats(p.build).hp;p.x=w.mission.entry.x;p.y=w.mission.entry.y;p.altitude=0;}
+  for(const p of w.players)if(p.hp<=0){p.hp=stats(p.build,p).hp;p.x=w.mission.entry.x;p.y=w.mission.entry.y;p.altitude=0;}
   return;
  }
  const living=alive(w);
  if(!living.length){
   s.wipeAt??=w.time;
   if(s.redeploys<=0){w.status='lost';return;}
-  if(w.time-s.wipeAt>4){s.redeploys--;s.wipeAt=null;w.bullets=[];for(const [i,p]of w.players.entries()){p.hp=stats(p.build).hp;p.x=s.checkpoint.x-70-i*45;p.y=s.checkpoint.y;p.altitude=0;p.recoverUntil=w.time+3;}}
+  if(w.time-s.wipeAt>4){s.redeploys--;s.wipeAt=null;w.bullets=[];for(const [i,p]of w.players.entries()){p.hp=stats(p.build,p).hp;p.x=s.checkpoint.x-70-i*45;p.y=s.checkpoint.y;p.altitude=0;p.recoverUntil=w.time+3;}}
   return;
  }
  s.wipeAt=null;
@@ -92,14 +92,14 @@ export function stepDestructionMission(w,dt,stats,onBlast){
  if(complete){
   s.phase++;w.cleared=s.phase;w.zoneIndex=s.phase;s.checkpoint={...w.mission.zones[s.phase]};
   s.notice=['','WALL BREACHED / Push into the refinery','FUEL NETWORK RUPTURED / Bring down command','COMMAND COLLAPSED / Boost to extraction'][s.phase];s.noticeUntil=w.time+3.5;
-  for(const p of w.players){p.hp=Math.min(stats(p.build).hp,Math.max(p.hp,stats(p.build).hp*.5)+35);p.recoverUntil=w.time+1.5;}
+  for(const p of w.players){p.hp=Math.min(stats(p.build,p).hp,Math.max(p.hp,stats(p.build,p).hp*.5)+35);p.recoverUntil=w.time+1.5;}
  }
  if(s.phase===3){
   const together=living.every(p=>distance(p,w.mission.exit)<155&&(p.altitude||0)<35);
   s.extract=together?s.extract+dt:0;
   if(s.extract>=3){w.cleared=4;w.status='won';}
  }
- for(const p of living)if(w.time-(p.lastHurt??-10)>5)p.hp=Math.min(stats(p.build).hp,p.hp+dt*5);
+ for(const p of living)if(w.time-(p.lastHurt??-10)>5)p.hp=Math.min(stats(p.build,p).hp,p.hp+dt*5);
 }
 export function destructionMarkers(w){
  if(!w.siege)return[];

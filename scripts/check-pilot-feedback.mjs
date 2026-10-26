@@ -44,7 +44,12 @@ try{
  assert.equal(await page.evaluate(()=>window.pilotPlayback.decoded),96);assert.equal(await page.evaluate(()=>window.pilotPlayback.started),3);
  await page.locator('#pilotVoiceSettings').click();await page.locator('[name=pilotVoice][value=echo]').check();await page.locator('#closePilotVoices').click();await page.reload();assert.equal(await page.locator('#pilotVoiceSettings').textContent(),'Voice: Echo');
  await page.locator('.topbar [data-feedback]').click();await buildVisible();await page.locator('[name=title]').fill('Local coexistence regression draft');await page.locator('#feedbackClose').click();
- await page.locator('#startGarage').click();await page.locator('#testBuildTop').click();await page.locator('#deploymentScreen').waitFor({state:'hidden'});await page.locator('#game').waitFor({state:'visible'});await page.evaluate(()=>document.exitPointerLock());
+ await page.locator('#startGarage').click();await page.locator('#testBuildTop').click();
+ await page.waitForFunction(()=>document.querySelector('#sceneFlow').dataset.phase==='idle'&&!document.querySelector('#game').hidden&&!document.querySelector('#game').inert);
+ assert.equal(await page.locator('#gameReport').count(),1,'one reporting control survives the merge');
+ const audioModules=await page.evaluate(()=>performance.getEntriesByType('resource').map(entry=>entry.name).filter(url=>new URL(url).pathname.endsWith('/audio.js')));
+ assert.equal(new Set(audioModules).size,1,'pilot voice, transitions and combat share one audio module');
+ await page.evaluate(()=>document.exitPointerLock());
  assert.equal(await page.locator('#voiceSettings').textContent(),'ECHO ▾');await controlsFit('#audioControls button');await buildVisible();await page.screenshot({path:output+'desktop-combat.png'});
  await page.locator('#voiceSettings').click();await page.locator('[name=pilotVoice][value=flint]').check();await page.locator('#closePilotVoices').click();assert.equal(await page.locator('#voiceSettings').textContent(),'FLINT ▾');
  await page.locator('#gameReport').click();assert.equal(await page.locator('[name=title]').inputValue(),'Local coexistence regression draft');await buildVisible();await page.waitForFunction(()=>document.querySelector('#feedbackScreenshot').naturalWidth>0);await page.screenshot({path:output+'desktop-feedback.png'});await page.locator('#feedbackClose').click();

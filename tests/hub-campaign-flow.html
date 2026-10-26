@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>IRONWAKE / Anchorage campaign flow fixture</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#101d22;color:#dce7df;font:14px/1.5 system-ui,sans-serif}main{padding:18px 22px}h1{font-size:22px;margin:0 0 8px}p{margin:6px 0;color:#b6c9c0}.controls{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}button{padding:10px 13px;border:1px solid #93b6a6;border-radius:3px;background:#25443e;color:#edf5e5;cursor:pointer}button:disabled{opacity:.4;cursor:default}#status{display:block;padding:10px 12px;background:#1d3338;border-left:3px solid #b6d59b;white-space:pre-wrap}details{margin-top:10px}#events{max-height:210px;overflow:auto;white-space:pre-wrap;font:12px/1.5 ui-monospace,monospace;margin:8px 0}iframe{display:block;width:100%;height:900px;min-height:720px;border:0;border-top:1px solid #617e74;background:#132026}strong{color:#d9efb9}.warning{color:#edc995}
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Anchorage / real game campaign flow</h1>
+    <p class="warning">Local development fixture. The embedded page is the actual game; only its PeerJS transport and host outcomes are simulated. This does not establish live WAN co-op or combat balance.</p>
+    <p>Connect, walk to stations in the game, research a chassis or train the pilot, then mark ready. Deploy through the fixture, complete a synthetic round, return, and spend the earned points and run tokens through the real station controls. Repeat for another mission or test a defeat.</p>
+    <p>Career purchases and rewards update this origin's real browser save. The synthetic host campaign and shared armory live only in this fixture. Reloading the guest keeps the browser saves.</p>
+    <div class="controls">
+      <button id="connect" disabled>Connect test squad</button>
+      <button id="rearDeck" disabled>Walk guest behind Command</button>
+      <button id="deploy" disabled>Host deploys next mission</button>
+      <button id="cancelDeploy" disabled>Host cancels deployment</button>
+      <button id="victory" disabled>Host completes mission</button>
+      <button id="defeat" disabled>Host loses mission</button>
+      <button id="return" disabled>Host returns to hub</button>
+      <button id="reconnect" disabled>Reconnect guest (keep saves)</button>
+      <button id="newRun" disabled>New synthetic host run</button>
+    </div>
+    <output id="status" role="status">Loading the game…</output>
+    <output id="guestDeck" role="status" style="display:block;margin-top:8px">Guest deck: not connected · autopilot idle</output>
+    <output id="deploymentState" role="status" style="display:block;margin-top:8px">Deployment: none</output>
+    <details open><summary>Transport and reward checks</summary><pre id="events" aria-live="polite"></pre></details>
+  </main>
+  <iframe id="game" title="Actual IRONWAKE game with local test host"></iframe>
+  <script type="module">
+    import{newCampaign,registerPilot,campaignMission,recordSortie,installRefit,profileFor}from '../dist/campaign.js';
+    import{chassisBlueprint}from '../dist/chassis.js';
+    import{newWorld,snapshot,cleanBuild,validBuild}from '../dist/core.js?v=41';
+    import{sortieReport}from '../dist/sortie-progression.js';
+    import{cleanCareer,awardCareerForWorld,careerProfile}from '../dist/career-progression.js';
+    import{cleanDeploymentProgression}from '../dist/career-progression.js';
+    import{HUB_PROTOCOL,HUB_STATIONS,newHubSave,inheritArmory,purchaseAtStation,rewardHub,missingLicenses,syncHubPlayers,setHubInput,stepHub,nearStation,hubSnapshot}from '../dist/hub-state.js';
+    import{validCallsign}from '../dist/pilot.js';
+    import{createDeploymentGate}from '../dist/cinematic.js';
+
+    const $=id=>document.getElementById(id),frame=$('game'),HOST='fixture-host',GUEST='fixture-guest',ROOM='TEST23',HOST_NAME='PILOT-ABCDEFGH';
+    const clone=value=>JSON.parse(JSON.stringify(value));
+    let campaign=newCampaign(86025),armory=inheritArmory(newHubSave(),[chassisBlueprint('vanguard')]),roster=[],hub=syncHubPlayers(null,[]),hostWorld=null;
+    let phase='loading',connection=null,peer=null,gameReady=false,joinAfterLoad=false,reloadCareer=null,guestPilot='',expectedCareer=null,lastHubPacket=0,lastWorldPacket=0,lastTick=performance.now();
+    let rearWalk=null,rearWalkStatus='idle',rearWalkDeadline=0,lastDeckDisplay=0;
+    let pendingDeployment=null,deploymentSequence=0,deploymentTicket='',previousDeploymentTicket='',guestDeploymentReady=false;
+    const events=[];
+    function log(message){events.push(new Date().toLocaleTimeString()+'  '+message);$('events').textContent=events.slice(-65).join('\n');$('events').scrollTop=$('events').scrollHeight;}
+    function assert(condition,message){log((condition?'PASS  ':'FAIL  ')+message);if(!condition)$('status').dataset.failed='true';return condition;}
+    function careerSave(){try{return cleanCareer(JSON.parse(localStorage.getItem('iw-career-v1')));}catch{return cleanCareer(null);}}
+    const guest=()=>roster.find(member=>member.id===GUEST);
+    function refreshDeck(){
+      const p=hub.players.find(player=>player.id===GUEST),output=$('guestDeck');
+      output.dataset.autopilot=rearWalk?'walking':rearWalkStatus;
+      output.dataset.x=p?String(p.x):'';output.dataset.z=p?String(p.z):'';
+      output.textContent=`Guest deck: ${p?`x ${p.x.toFixed(3)}, z ${p.z.toFixed(3)}`:'not connected'} · autopilot ${rearWalk?'walking ('+rearWalk.length+' waypoints left)':rearWalkStatus}`;
+    }
+    function stopRearWalk(status='idle'){
+      rearWalk=null;rearWalkStatus=status;setHubInput(hub,GUEST,{x:0,z:0});refreshDeck();
+    }
+    function refresh(){
+      const connected=!!connection?.open,member=guest(),profile=profileFor(campaign,guestPilot);
+      $('connect').disabled=!gameReady||connected||phase==='loading';
+      $('rearDeck').disabled=!connected||phase!=='hub'||!!rearWalk;
+      $('deploy').disabled=!connected||phase!=='hub'||campaign.runState!=='active'||!member?.ready;
+      $('cancelDeploy').disabled=!connected||phase!=='deploying';
+      $('victory').disabled=$('defeat').disabled=!connected||phase!=='playing';
+      $('return').disabled=!connected||phase!=='result';
+      $('reconnect').disabled=!gameReady||!connected||phase!=='hub';
+      $('newRun').disabled=!connected||phase!=='hub';
+      $('status').textContent=`${phase.toUpperCase()} · synthetic host mission ${Math.min(9,campaign.level+1)} / 9 · secured ${campaign.level} · run ${campaign.runState}\n${guestPilot||'Guest not connected'} · guest ${member?.ready?'READY':'not ready'} · ${profile.credits} run tokens · ${profile.modules.length} run modules · shared ${armory.credits} CR`;
+      const deploymentOutput=$('deploymentState');
+      deploymentOutput.dataset.ticket=deploymentTicket;deploymentOutput.dataset.previousTicket=previousDeploymentTicket;deploymentOutput.dataset.ready=String(guestDeploymentReady);deploymentOutput.dataset.sequence=String(deploymentSequence);
+      deploymentOutput.textContent=`Deployment: ${deploymentTicket||'none'} · guest intro ${guestDeploymentReady?'READY':'not ready'} · host world time ${hostWorld?.time??'none'}`;
+      refreshDeck();
+    }
+    function deliver(data){if(connection?.open)connection.emit('data',clone(data));}
+    function lobby(){hub=syncHubPlayers(hub,roster);deliver({type:'lobby',room:ROOM,roster,mission:campaignMission(campaign),campaign,armory,hub:hubSnapshot(hub)});refresh();}
+    function unready(){roster.forEach(member=>member.ready=false);}
+    function receive(data){
+      if(!data||typeof data!=='object')return;
+      if(data.type==='deployment-ready'){
+        const pending=pendingDeployment;
+        if(phase!=='deploying'||!pending||!pending.gate.acknowledge(GUEST,data.ticket)){log('Ignored stale or unexpected deployment readiness ticket.');return;}
+        guestDeploymentReady=true;
+        assert(frame.contentDocument.getElementById('sceneFlow')?.dataset.phase==='waiting','the actual guest completed the full intro before acknowledging readiness.');
+        assert(hostWorld.time===pending.worldTime,'synthetic host world did not advance before combat launch.');
+        assert(JSON.stringify(careerSave())===JSON.stringify(pending.career),'loading and insertion do not grant career rewards.');
+        assert(JSON.stringify(campaign)===JSON.stringify(pending.campaign)&&JSON.stringify(armory)===JSON.stringify(pending.armory),'loading and insertion preserve campaign and shared armory.');
+        log('Guest full-intro readiness arrived for '+pending.ticket+'.');
+        if(pending.gate.complete){
+          pendingDeployment=null;phase='playing';lastWorldPacket=performance.now();deliver({type:'combat-live',ticket:pending.ticket});
+          assert(!frame.contentDocument.getElementById('game').inert,'matching combat-live ticket hands the real game to combat.');
+          const player=hostWorld.players.find(player=>player.id===GUEST);
+          assert(JSON.stringify(player.progression)===JSON.stringify(guest().progression),'deployment preserves the actual purchased career ranks.');
+          assert(JSON.stringify(player.field.modules)===JSON.stringify(profileFor(campaign,guestPilot).modules),'deployment carries the guest run modules.');
+          log('Readiness barrier released; synthetic world advancement is now enabled.');refresh();
+        }
+        return;
+      }
+      if(data.type==='deployment-failed'){
+        if(phase==='deploying'&&data.ticket===pendingDeployment?.ticket)cancelHostDeployment('Guest reported deployment failure.');
+        return;
+      }
+      if(data.type==='hello'){
+        stopRearWalk();
+        if(!validCallsign(data.callsign)){log('Rejected invalid fixture hello callsign.');return;}
+        guestPilot=data.callsign;
+        const build=cleanBuild(data.build);
+        roster=[{id:HOST,name:HOST_NAME,build:chassisBlueprint('vanguard'),progression:{mech:[],pilot:[]},ready:false},{id:GUEST,name:guestPilot,build,progression:cleanDeploymentProgression(data.progression,build.chassis),ready:false}];
+        campaign=registerPilot(campaign,HOST_NAME,roster.map(member=>member.name));campaign=registerPilot(campaign,guestPilot,roster.map(member=>member.name));
+        // Match the production migration for established equipment, without granting every license.
+        armory=inheritArmory(armory,roster.map(member=>member.build));hub=syncHubPlayers(hub,roster);
+        const command=HUB_STATIONS.find(station=>station.id==='mission');Object.assign(hub.players.find(player=>player.id===HOST),{x:command.x,z:command.z});
+        phase='hub';log('hello accepted for '+guestPilot+'; real roster progression retained.');lobby();return;
+      }
+      if(data.type==='hubInput'&&phase==='hub'){if(!rearWalk)setHubInput(hub,GUEST,data.input);return;}
+      if(data.type==='input')return;
+      const member=guest();if(!member||phase!=='hub')return;
+      if(data.type==='loadout'){
+        member.build=cleanBuild(data.build);member.progression=cleanDeploymentProgression(data.progression,member.build.chassis);member.ready=false;
+        log('loadout received; guest readiness cleared; progression '+JSON.stringify(member.progression));lobby();
+      }else if(data.type==='ready'){
+        member.ready=!!data.ready&&data.campaignId===campaign.id&&data.revision===campaign.revision&&validBuild(member.build)&&missingLicenses(armory,member.build).length===0;
+        log('ready received: '+member.ready+' (campaign revision '+data.revision+').');lobby();
+      }else if(data.type==='refit'){
+        const next=nearStation(hub,GUEST,'supply')?installRefit(campaign,member.name,data.request):campaign;
+        if(next!==campaign){campaign=next;unready();log('refit installed through real Run supplies UI; squad readiness cleared.');}else log('refit rejected: proximity, token, offer or revision did not match.');
+        lobby();
+      }else if(data.type==='hubPurchase'){
+        const next=purchaseAtStation(armory,hub,GUEST,data.request);
+        if(next!==armory){armory=next;log('shared license purchased at the real vendor.');}else log('license rejected: proximity, currency, unlock or revision did not match.');
+        lobby();
+      }
+    }
+    class Emitter{
+      constructor(){this.handlers=new Map();}
+      on(type,handler){const handlers=this.handlers.get(type)||[];handlers.push(handler);this.handlers.set(type,handlers);return this;}
+      emit(type,value){for(const handler of this.handlers.get(type)||[])handler(value);}
+    }
+    class LocalConnection extends Emitter{
+      constructor(){super();this.peer=HUB_PROTOCOL+ROOM;this.open=false;this.bufferSize=0;}
+      send(data){if(this.open)receive(clone(data));}
+      close(){if(!this.open)return;stopRearWalk();if(pendingDeployment){assertUnsettledDeployment(pendingDeployment);pendingDeployment=null;hostWorld=null;unready();}this.open=false;phase='disconnected';log('mock connection closed; real app resets its network state.');this.emit('close');refresh();}
+    }
+    function installPeer(){
+      const win=frame.contentWindow;
+      win.Peer=class LocalPeer extends Emitter{
+        constructor(){super();this.destroyed=false;this.id=GUEST;peer=this;win.setTimeout(()=>{if(!this.destroyed)this.emit('open',GUEST);},0);}
+        connect(target){
+          connection=new LocalConnection();const conn=connection;
+          win.setTimeout(()=>{if(this.destroyed)return;if(target!==HUB_PROTOCOL+ROOM){this.emit('error',{type:'peer-unavailable'});return;}conn.open=true;conn.emit('open');},0);
+          return conn;
+        }
+        destroy(){this.destroyed=true;connection?.close();if(peer===this)peer=null;}
+        reconnect(){}
+      };
+    }
+    async function waitFor(check,description,timeout=10000){
+      const deadline=performance.now()+timeout;
+      while(performance.now()<deadline){if(check())return;await new Promise(resolve=>setTimeout(resolve,50));}
+      throw new Error('Timed out waiting for '+description+'.');
+    }
+    async function connect(){
+      await waitFor(()=>typeof frame.contentDocument?.getElementById('startJoin')?.onclick==='function','the real app join handler');
+      const doc=frame.contentDocument;doc.getElementById('startJoin').click();doc.getElementById('joinCode').value=ROOM;doc.getElementById('confirmJoin').click();
+      await waitFor(()=>phase==='hub'&&connection?.open,'the real app to accept a lobby');
+      log('Actual Join squad controls connected the guest to deterministic local transport.');refresh();
+    }
+    async function deploy(){
+      if(phase!=='hub'||!guest()?.ready||campaign.runState!=='active')return;
+      stopRearWalk();
+      roster.find(member=>member.id===HOST).ready=true;
+      hostWorld=newWorld(campaignMission(campaign),roster);expectedCareer=careerSave();phase='deploying';refresh();
+      previousDeploymentTicket=deploymentTicket;deploymentTicket='fixture-drop-'+(++deploymentSequence)+'-'+crypto.randomUUID();guestDeploymentReady=false;
+      const pending=pendingDeployment={ticket:deploymentTicket,campaign:clone(campaign),armory:clone(armory),career:careerSave(),worldTime:hostWorld.time,gate:createDeploymentGate(deploymentTicket,[HOST,GUEST])};
+      pending.gate.acknowledge(HOST,pending.ticket);
+      if(previousDeploymentTicket)assert(previousDeploymentTicket!==deploymentTicket,'retry uses a new deployment ticket.');
+      deliver({type:'start',ticket:pending.ticket,world:snapshot(hostWorld)});
+      if(previousDeploymentTicket){deliver({type:'combat-live',ticket:previousDeploymentTicket});assert(frame.contentDocument.getElementById('game').inert,'a stale previous combat-live ticket cannot release the new deployment.');}
+      log('Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.');refresh();
+      await waitFor(()=>pendingDeployment!==pending,'the readiness barrier or deployment cancellation',35000);
+    }
+    function assertUnsettledDeployment(pending){
+      assert(campaign.runState==='active'&&JSON.stringify(campaign)===JSON.stringify(pending.campaign),'cancel before combat leaves the active campaign unchanged.');
+      assert(JSON.stringify(careerSave())===JSON.stringify(pending.career),'cancel before combat leaves career points and rewards unchanged.');
+      assert(JSON.stringify(armory)===JSON.stringify(pending.armory),'cancel before combat leaves the shared armory unchanged.');
+      assert(hostWorld?.time===pending.worldTime,'cancelled deployment never advanced the synthetic world.');
+    }
+    function cancelHostDeployment(reason='Host cancelled deployment.'){
+      if(phase!=='deploying'||!pendingDeployment)return;
+      assertUnsettledDeployment(pendingDeployment);pendingDeployment=null;
+      stopRearWalk();unready();hub=syncHubPlayers(null,roster);hostWorld=null;phase='hub';
+      deliver({type:'return',mission:campaignMission(campaign),roster,campaign,armory,hub:hubSnapshot(hub)});
+      const doc=frame.contentDocument;
+      assert(doc.body.dataset.screen==='hub'&&doc.getElementById('game').hidden&&!doc.getElementById('hangar').hidden,'real return message cancels insertion and restores Anchorage.');
+      assert(doc.getElementById('sceneFlow')?.dataset.phase==='idle','cancelled deployment clears the actual cinematic overlay.');
+      log(reason+' Ready up and retry the same mission with a new ticket.');refresh();
+    }
+    function outcome(won){
+      if(phase!=='playing'||!hostWorld)return;
+      stopRearWalk();
+      hostWorld.status=won?'won':'lost';hostWorld.time=90;hostWorld.cleared=won?hostWorld.mission.zones.length:0;
+      hostWorld.sortie.salvage=won?480:0;hostWorld.sortie.salvageUnits=hostWorld.sortie.salvage*100;
+      expectedCareer=awardCareerForWorld(expectedCareer,hostWorld,GUEST,guestPilot);
+      deliver({type:'state',world:snapshot(hostWorld,false)});
+      assert(JSON.stringify(careerSave())===JSON.stringify(expectedCareer),won?'the real final-snapshot handler saves one deduplicated guest career reward.':'defeat gives no career reward.');
+      const chassis=hostWorld.players.find(player=>player.id===GUEST).build.chassis||'custom',saved=careerSave();
+      log('Saved totals: '+careerProfile(saved,'mech',chassis).earned+' '+chassis+' research, '+careerProfile(saved,'pilot',guestPilot).earned+' pilot points.');
+      campaign=recordSortie(campaign,won?'victory':'defeat',sortieReport(hostWorld,won?'victory':'defeat'));armory=rewardHub(armory,campaign);
+      phase='result';log((won?'Synthetic victory':'Synthetic defeat')+' settled with the real campaign/armory models. Use Host returns to hub separately.');refresh();
+    }
+    function returnToHub(){
+      if(phase!=='result')return;
+      stopRearWalk();
+      unready();hub=syncHubPlayers(null,roster);hostWorld=null;phase='hub';
+      deliver({type:'return',mission:campaignMission(campaign),roster,campaign,armory,hub:hubSnapshot(hub)});
+      assert(JSON.stringify(careerSave())===JSON.stringify(expectedCareer),'return does not award the same career round twice.');
+      assert(frame.contentDocument.body.dataset.screen==='hub','the real guest return handler enters Anchorage.');
+      log('Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.');refresh();
+    }
+    function guarded(action){return()=>Promise.resolve().then(action).catch(error=>{log('ERROR  '+error.message);refresh();});}
+    $('rearDeck').onclick=()=>{
+      if(!connection?.open||phase!=='hub'||rearWalk)return;
+      const doc=frame.contentDocument;
+      doc.querySelector('#hubVendor:not([hidden]) [data-hub-close],#hubCommand:not([hidden]) [data-hub-close]')?.click();
+      rearWalk=[{x:10,z:19},{x:10,z:-22},{x:0,z:-22}];rearWalkStatus='walking';rearWalkDeadline=performance.now()+50000;
+      setHubInput(hub,GUEST,{x:0,z:0});log('Walking guest to the rear strip using real host movement; guest input paused until arrival.');refresh();
+    };
+    $('connect').onclick=guarded(connect);$('deploy').onclick=guarded(deploy);$('cancelDeploy').onclick=()=>cancelHostDeployment();$('victory').onclick=()=>outcome(true);$('defeat').onclick=()=>outcome(false);$('return').onclick=returnToHub;
+    $('reconnect').onclick=()=>{if(phase!=='hub')return;stopRearWalk();reloadCareer=careerSave();joinAfterLoad=true;connection?.close();gameReady=false;phase='loading';refresh();frame.contentWindow.location.reload();};
+    $('newRun').onclick=()=>{if(phase!=='hub')return;stopRearWalk();const names=roster.map(member=>member.name);campaign=newCampaign(86025);for(const name of names)campaign=registerPilot(campaign,name,names);unready();hub=syncHubPlayers(null,roster);log('Started a fresh synthetic host campaign; personal career and shared armory remain.');lobby();};
+    frame.addEventListener('load',guarded(async()=>{
+      if(!['127.0.0.1','localhost'].includes(location.hostname))return;
+      stopRearWalk();
+      installPeer();await waitFor(()=>typeof frame.contentDocument?.getElementById('startJoin')?.onclick==='function','game initialization');
+      gameReady=true;phase='disconnected';
+      if(reloadCareer){assert(JSON.stringify(careerSave())===JSON.stringify(reloadCareer),'career purchases and rewards survive an actual game reload.');reloadCareer=null;}
+      log('Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.');refresh();
+      if(joinAfterLoad){joinAfterLoad=false;await connect();}
+    }));
+    if(['127.0.0.1','localhost'].includes(location.hostname)){
+      frame.src='../dist/';
+      setInterval(()=>{
+        const now=performance.now(),dt=Math.min(.05,(now-lastTick)/1000);lastTick=now;
+        if(!connection?.open)return;
+        if(phase==='hub'){
+          if(rearWalk){
+            const p=hub.players.find(player=>player.id===GUEST);
+            while(p&&rearWalk.length&&Math.hypot(rearWalk[0].x-p.x,rearWalk[0].z-p.z)<.35)rearWalk.shift();
+            if(!p||now>=rearWalkDeadline){stopRearWalk('stopped');log('Rear-deck walk stopped before arrival; guest control resumed.');refresh();}
+            else if(!rearWalk.length){stopRearWalk('arrived');log('Guest reached the rear strip without teleporting; real client input resumed.');refresh();}
+            else{const dx=rearWalk[0].x-p.x,dz=rearWalk[0].z-p.z,length=Math.hypot(dx,dz);setHubInput(hub,GUEST,{x:dx/length,z:dz/length});}
+          }
+          stepHub(hub,dt);
+          if(now-lastHubPacket>=80){lastHubPacket=now;deliver({type:'hubState',hub:hubSnapshot(hub)});}
+          if(now-lastDeckDisplay>=100){lastDeckDisplay=now;refreshDeck();}
+        }else if(phase==='playing'&&now-lastWorldPacket>=1000){lastWorldPacket=now;hostWorld.time++;deliver({type:'state',world:snapshot(hostWorld,false)});}
+      },1000/60);
+    }else{frame.hidden=true;$('status').textContent='This development fixture runs only on localhost or 127.0.0.1.';log('Blocked outside localhost.');}
+  </script>
+</body>
+</html>

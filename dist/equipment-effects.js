@@ -2,6 +2,8 @@ import * as T from './vendor/three.module.min.js';
 import {ABILITIES,WEAPONS,equipmentFor} from './core.js?v=41';
 import {impactLevel} from './impact-preferences.js';
 import {ITEM_TINTS} from './item-models.js';
+import {fieldModifiers} from './sortie-progression.js';
+import {fieldArea} from './field-combat.js';
 
 const up=new T.Vector3(0,1,0);
 // Four fields and eight hands share three fixed instanced pools. No particles are allocated per frame.
@@ -53,7 +55,7 @@ export function createEquipmentFX(parent,{fieldScale=1}={}){
    const special=p.activeAbility||equipmentFor(p.build)[2],ability=ABILITIES[special];
    const x=p.x*.1,y=(p.altitude||0)*.1+.15,z=p.y*.1;
    if(p.active>0&&ability){
-    const age=Math.max(0,ability.duration-p.active),r=ability.radius*.1*fieldScale,tint=ITEM_TINTS[special],fade=Math.min(1,p.active*2,age*5+.15),burst=Math.max(0,1-age/1.1);
+    const age=Math.max(0,ability.duration-p.active),radius=ability.radius*fieldArea(fieldModifiers(p)),r=radius*.1*fieldScale,tint=ITEM_TINTS[special],fade=Math.min(1,p.active*2,age*5+.15),burst=Math.max(0,1-age/1.1);
     if(special==='shield'){
      const shell=shells[index];shell.visible=true;shell.position.set(x,y,z);shell.scale.setScalar(r*Math.min(1,.12+age*3));
      shell.material.uniforms.clock.value=clock;shell.material.uniforms.strength.value=fade*(full?1:.65);shell.material.uniforms.motion.value=motion;
@@ -69,7 +71,7 @@ export function createEquipmentFX(parent,{fieldScale=1}={}){
       const a=j*2.399,reach=r*Math.min(1,age/.7);let ax=x,ay=y+3,az=z;
       for(let n=1;n<=6;n++){const f=n/6,jag=Math.sin(j*7+n*13+Math.floor(age*10)*motion)*(n===6?0:.6)*level,bx=x+Math.cos(a)*reach*f+Math.sin(a)*jag,bz=z+Math.sin(a)*reach*f-Math.cos(a)*jag,by=y+3*(1-f)+jag;bolt(ax,ay,az,bx,by,bz,tint,burst*level);ax=bx;ay=by;az=bz;}
      }
-     for(const enemy of(w.enemies||[]).filter(e=>e.hp>0&&e.stun>0&&Math.hypot(e.x-p.x,e.y-p.y,(e.altitude||0)-(p.altitude||0))<ability.radius).slice(0,8)){
+     for(const enemy of(w.enemies||[]).filter(e=>e.hp>0&&e.stun>0&&Math.hypot(e.x-p.x,e.y-p.y,(e.altitude||0)-(p.altitude||0))<radius).slice(0,8)){
       const ex=enemy.x*.1,ey=(enemy.altitude||0)*.1+4,ez=enemy.y*.1;put(0,ex,ey,ez,.7,.7,.7,tint,.5*fade*level,horizontal);
       for(let j=0;j<(full?5:2);j++){const a=j*2.399+Math.floor(clock*8)*motion;bolt(ex+Math.cos(a)*.7,ey-.7,ez+Math.sin(a)*.7,ex+Math.cos(a+1)*.9,ey+.4,ez+Math.sin(a+1)*.9,tint,fade*level);}
      }
@@ -81,7 +83,7 @@ export function createEquipmentFX(parent,{fieldScale=1}={}){
       const size=.1*(1-f*.6),strength=fade*(1-f)*.8;put(1,px,py,pz,size,size*3,size,tint,strength);put(1,px,py,pz,size*3,size,size,tint,strength);
      }
      // Visible flow reaches only living allies actually inside the spherical repair radius.
-     for(const ally of w.players.slice(0,4))if(ally.hp>0){end.set(ally.x*.1,(ally.altitude||0)*.1+3,ally.y*.1);position.set(x,y+4,z);if(Math.hypot(ally.x-p.x,ally.y-p.y,(ally.altitude||0)-(p.altitude||0))>=ability.radius)continue;
+     for(const ally of w.players.slice(0,4))if(ally.hp>0){end.set(ally.x*.1,(ally.altitude||0)*.1+3,ally.y*.1);position.set(x,y+4,z);if(Math.hypot(ally.x-p.x,ally.y-p.y,(ally.altitude||0)-(p.altitude||0))>=radius)continue;
       for(let j=0;j<4;j++){local.lerpVectors(position,end,(clock*.6*motion+j/4)%1);put(1,local.x,local.y,local.z,.09,.25,.09,tint,fade*.65);}
      }
      for(let j=0;j<3;j++){const a=j*Math.PI*2/3+clock*.4*motion,dx=x+Math.cos(a)*2,dy=y+4+Math.sin(clock*2*motion+j)*.2,dz=z+Math.sin(a)*2;put(1,dx,dy,dz,.2,.12,.35,tint,fade);put(0,dx,dy+.13,dz,.38,.38,.38,tint,fade*.6,horizontal);}
