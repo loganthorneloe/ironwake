@@ -1,28 +1,174 @@
-.garage-heading #chooseChassis{margin-right:auto;max-width:360px;text-align:left;padding:8px 13px;min-height:38px;font-size:13px}
-.garage-heading{gap:16px;flex-wrap:wrap}
-#chassisSummary{font:12px/1.4 var(--ui);color:var(--bright);margin:5px 0}
-#modal:has(.chassis-picker){width:min(1120px,95vw);max-width:1120px;max-height:92vh;padding:26px}
-.chassis-picker{font-family:var(--ui);color:var(--ink)}
-.chassis-picker>h2{font-size:28px;line-height:1.2;margin:5px 0 10px}
-.chassis-picker>p{font-size:13px;line-height:1.6;color:var(--soft);max-width:840px}
-.chassis-filters{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0}
-.chassis-filters .button{font-size:12px;padding:8px 13px;min-height:34px}
-.chassis-filters [aria-pressed=true]{background:var(--bright);color:#10190d}
-.chassis-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.chassis-card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#101c12}
-.chassis-card.selected{border-color:var(--bright)}
-.chassis-card-title{display:flex;gap:12px;align-items:center}
-.chassis-card-title svg{width:55px;height:55px;flex:none;fill:none;stroke:var(--bright);stroke-width:1.5;stroke-linejoin:round}
-.chassis-card-title small{font-size:10px;letter-spacing:.04em;color:var(--soft)}
-.chassis-card h3{font-size:23px;margin:4px 0;color:var(--bright)}
-.chassis-card>p{font-size:12px;line-height:1.5;color:var(--soft);margin:12px 0;min-height:38px}
-.chassis-card dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
-.chassis-card dt{font-size:10px;color:var(--soft)}
-.chassis-card dd{font-size:20px;margin:3px 0;color:var(--ink)}
-.chassis-card .chassis-mounts{font-size:11px;color:var(--bright);min-height:0}
-.chassis-card-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.chassis-card-actions .button{font-size:12px;padding:8px 10px;min-height:35px}
-.chassis-card-actions .text-button{font-size:11px}
-.chassis-note{margin-top:18px}
-@media(max-width:850px){.chassis-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.garage-heading #chooseChassis{margin:0}.garage-heading .workshop-heading-actions{margin-left:auto}}
-@media(max-width:560px){.chassis-cards{grid-template-columns:1fr}#modal:has(.chassis-picker){padding:18px}.chassis-picker>h2{font-size:24px}.chassis-filters{gap:5px}.chassis-filters .button{padding:7px 9px}.garage-heading #chooseChassis{max-width:100%;font-size:12px}.garage-heading .workshop-heading-actions{margin:0;width:100%}.chassis-card>p{min-height:0}}
+.garage-heading #chooseChassis {
+  margin-right: auto;
+  max-width: 360px;
+  text-align: left;
+  padding: 8px 13px;
+  min-height: 38px;
+  font-size: 13px;
+}
+.garage-heading {
+  gap: 16px;
+  flex-wrap: wrap;
+}
+#chassisSummary {
+  font: 12px/1.4 var(--ui);
+  color: var(--bright);
+  margin: 5px 0;
+}
+#modal:has(.chassis-picker) {
+  width: min(1120px, 95vw);
+  max-width: 1120px;
+  max-height: 92vh;
+  padding: 26px;
+}
+.chassis-picker {
+  font-family: var(--ui);
+  color: var(--ink);
+}
+.chassis-picker > h2 {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 5px 0 10px;
+}
+.chassis-picker > p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--soft);
+  max-width: 840px;
+}
+.chassis-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 18px 0;
+}
+.chassis-filters .button {
+  font-size: 12px;
+  padding: 8px 13px;
+  min-height: 34px;
+}
+.chassis-filters [aria-pressed='true'] {
+  background: var(--bright);
+  color: #10190d;
+}
+.chassis-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.chassis-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #101c12;
+}
+.chassis-card.selected {
+  border-color: var(--bright);
+}
+.chassis-card-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.chassis-card-title svg {
+  width: 55px;
+  height: 55px;
+  flex: none;
+  fill: none;
+  stroke: var(--bright);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.chassis-card-title small {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--soft);
+}
+.chassis-card h3 {
+  font-size: 23px;
+  margin: 4px 0;
+  color: var(--bright);
+}
+.chassis-card > p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--soft);
+  margin: 12px 0;
+  min-height: 38px;
+}
+.chassis-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.chassis-card dt {
+  font-size: 10px;
+  color: var(--soft);
+}
+.chassis-card dd {
+  font-size: 20px;
+  margin: 3px 0;
+  color: var(--ink);
+}
+.chassis-card .chassis-mounts {
+  font-size: 11px;
+  color: var(--bright);
+  min-height: 0;
+}
+.chassis-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.chassis-card-actions .button {
+  font-size: 12px;
+  padding: 8px 10px;
+  min-height: 35px;
+}
+.chassis-card-actions .text-button {
+  font-size: 11px;
+}
+.chassis-note {
+  margin-top: 18px;
+}
+@media (max-width: 850px) {
+  .chassis-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .garage-heading #chooseChassis {
+    margin: 0;
+  }
+  .garage-heading .workshop-heading-actions {
+    margin-left: auto;
+  }
+}
+@media (max-width: 560px) {
+  .chassis-cards {
+    grid-template-columns: 1fr;
+  }
+  #modal:has(.chassis-picker) {
+    padding: 18px;
+  }
+  .chassis-picker > h2 {
+    font-size: 24px;
+  }
+  .chassis-filters {
+    gap: 5px;
+  }
+  .chassis-filters .button {
+    padding: 7px 9px;
+  }
+  .garage-heading #chooseChassis {
+    max-width: 100%;
+    font-size: 12px;
+  }
+  .garage-heading .workshop-heading-actions {
+    margin: 0;
+    width: 100%;
+  }
+  .chassis-card > p {
+    min-height: 0;
+  }
+}

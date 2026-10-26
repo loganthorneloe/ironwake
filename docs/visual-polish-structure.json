@@ -1,0 +1,223 @@
+{
+  "kind": "Node CPU and scene structure; no GPU rendering, culling, FPS or visual acceptance",
+  "recordedAt": "2026-10-26T19:01:23.963Z",
+  "baseline": "5492bdb286ce48b45fc6e66be3e50abc1482ccce",
+  "revision": "185d41c37661f4af4c1bcadd838a5146d7b5d45f",
+  "arenas": [
+    {
+      "id": "ashgate",
+      "before": {
+        "meshes": 37,
+        "instances": 128,
+        "triangles": 3500,
+        "shadowCandidates": 26,
+        "colliders": 16
+      },
+      "after": {
+        "meshes": 32,
+        "instances": 429,
+        "triangles": 7260,
+        "shadowCandidates": 18,
+        "colliders": 16
+      }
+    },
+    {
+      "id": "glasswater",
+      "before": {
+        "meshes": 45,
+        "instances": 152,
+        "triangles": 4664,
+        "shadowCandidates": 32,
+        "colliders": 20
+      },
+      "after": {
+        "meshes": 36,
+        "instances": 447,
+        "triangles": 9080,
+        "shadowCandidates": 20,
+        "colliders": 20
+      }
+    },
+    {
+      "id": "relay-nine",
+      "before": {
+        "meshes": 36,
+        "instances": 128,
+        "triangles": 3468,
+        "shadowCandidates": 25,
+        "colliders": 16
+      },
+      "after": {
+        "meshes": 33,
+        "instances": 423,
+        "triangles": 6988,
+        "shadowCandidates": 18,
+        "colliders": 16
+      }
+    },
+    {
+      "id": "iron-orchard",
+      "before": {
+        "meshes": 37,
+        "instances": 120,
+        "triangles": 3404,
+        "shadowCandidates": 26,
+        "colliders": 16
+      },
+      "after": {
+        "meshes": 32,
+        "instances": 413,
+        "triangles": 7068,
+        "shadowCandidates": 18,
+        "colliders": 16
+      }
+    },
+    {
+      "id": "gale-foundry",
+      "before": {
+        "meshes": 42,
+        "instances": 159,
+        "triangles": 5420,
+        "shadowCandidates": 29,
+        "colliders": 19
+      },
+      "after": {
+        "meshes": 35,
+        "instances": 485,
+        "triangles": 10852,
+        "shadowCandidates": 19,
+        "colliders": 19
+      }
+    },
+    {
+      "id": "blackrail",
+      "before": {
+        "meshes": 37,
+        "instances": 130,
+        "triangles": 3524,
+        "shadowCandidates": 26,
+        "colliders": 16
+      },
+      "after": {
+        "meshes": 32,
+        "instances": 431,
+        "triangles": 7284,
+        "shadowCandidates": 18,
+        "colliders": 16
+      }
+    },
+    {
+      "id": "halo-spire",
+      "before": {
+        "meshes": 43,
+        "instances": 142,
+        "triangles": 3672,
+        "shadowCandidates": 30,
+        "colliders": 21
+      },
+      "after": {
+        "meshes": 37,
+        "instances": 437,
+        "triangles": 7192,
+        "shadowCandidates": 20,
+        "colliders": 21
+      }
+    },
+    {
+      "id": "shatter-basin",
+      "before": {
+        "meshes": 36,
+        "instances": 112,
+        "triangles": 3244,
+        "shadowCandidates": 25,
+        "colliders": 16
+      },
+      "after": {
+        "meshes": 33,
+        "instances": 391,
+        "triangles": 6508,
+        "shadowCandidates": 19,
+        "colliders": 16
+      }
+    },
+    {
+      "id": "crown-engine",
+      "before": {
+        "meshes": 43,
+        "instances": 170,
+        "triangles": 5720,
+        "shadowCandidates": 30,
+        "colliders": 21
+      },
+      "after": {
+        "meshes": 36,
+        "instances": 488,
+        "triangles": 11056,
+        "shadowCandidates": 20,
+        "colliders": 21
+      }
+    }
+  ],
+  "surfaceCpu": [
+    {
+      "tier": "standard",
+      "reduced": false,
+      "samples": 600,
+      "p50Ms": 0.026399999999966894,
+      "p95Ms": 0.09569999999996526,
+      "shadowTexels": 1048576,
+      "maxMotes": 96,
+      "surfaces": {
+        "contacts": 52,
+        "scorch": 24,
+        "marks": 24,
+        "seen": 128
+      }
+    },
+    {
+      "tier": "standard",
+      "reduced": true,
+      "samples": 600,
+      "p50Ms": 0.021100000000046748,
+      "p95Ms": 0.055999999999983174,
+      "shadowTexels": 1048576,
+      "maxMotes": 0,
+      "surfaces": {
+        "contacts": 52,
+        "scorch": 4,
+        "marks": 24,
+        "seen": 128
+      }
+    },
+    {
+      "tier": "compact",
+      "reduced": false,
+      "samples": 600,
+      "p50Ms": 0.021800000000041564,
+      "p95Ms": 0.05110000000001946,
+      "shadowTexels": 262144,
+      "maxMotes": 32,
+      "surfaces": {
+        "contacts": 52,
+        "scorch": 8,
+        "marks": 8,
+        "seen": 128
+      }
+    },
+    {
+      "tier": "compact",
+      "reduced": true,
+      "samples": 600,
+      "p50Ms": 0.02050000000002683,
+      "p95Ms": 0.04450000000002774,
+      "shadowTexels": 262144,
+      "maxMotes": 0,
+      "surfaces": {
+        "contacts": 52,
+        "scorch": 4,
+        "marks": 8,
+        "seen": 128
+      }
+    }
+  ]
+}

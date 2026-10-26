@@ -1,0 +1,61 @@
+{
+  "capturedAt": "2026-10-26T19:17:59.476Z",
+  "runtimeCommit": "92011c2c81b84da82994f38572a5dc729444ecd2",
+  "method": "Supported in-app-browser screenshot API; unmodified JPEG captures of the normal game UI",
+  "fixtureAssistance": false,
+  "syntheticOutcomes": false,
+  "consoleWarningsOrErrorsRecorded": [],
+  "physicalDeviceTest": false,
+  "observedFlow": "New campaign → walk to Command → deploy → normal combat/defeat/redeploy → return; normal Practice route; V toggled to Reduced; portrait viewport capture.",
+  "limitations": [
+    "No campaign victory",
+    "No independent remote squad",
+    "No physical touch/mobile/low-end GPU benchmark",
+    "No controlled before/after comparison",
+    "No complete nine-arena visual acceptance or interrupted-flow regression"
+  ],
+  "files": [
+    {
+      "file": "anchorage-desktop.jpg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "fbefe624619bd2b1bd4ac350098723eef92b199e13905eae036ed633afcdfaea",
+      "caption": "Wake Anchorage at 1280×720: retained physical stations, warm practical pools and machine grounding."
+    },
+    {
+      "file": "anchorage-portrait.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "6f1441bf7044b24bcf0c529a38f38f59fe5c38b80bc53deadce3e13cf994f694",
+      "caption": "Wake Anchorage at 390×844 after return: responsive 3D context and movement controls; viewport emulation, not a physical phone test."
+    },
+    {
+      "file": "ashgate-desktop.jpg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "3536be1d9a75a5f462a0dcc2b592b95262dc9836d0a17e7341ebea956a5cc9d9",
+      "caption": "Ashgate Depot practice at 1280×720, Full effects: live movement, soft ground contact, wall-face cladding, service markings and industrial horizon."
+    },
+    {
+      "file": "ashgate-insertion.jpg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "ae5190f0991a37260054df072c5687033852d1890ed448309551534725f15ab0",
+      "caption": "Normal Ashgate insertion cinematic at 1280×720, showing the implemented arena before combat release."
+    },
+    {
+      "file": "ashgate-portrait-reduced.jpg",
+      "width": 390,
+      "height": 844,
+      "sha256": "f35cc8d56f1e1f88c6057a79bc65ee5c16841ba15544bd9bc0b639ec5c7c0c17",
+      "caption": "Ashgate practice at 390×844 after the in-game V toggle confirmed Reduced effects. This is a live combat frame with the contextual field-equipment prompt visible."
+    },
+    {
+      "file": "command-desktop.jpg",
+      "width": 1280,
+      "height": 720,
+      "sha256": "82d5ebc9f98f1d59b02111ca6074cdc59accc85f83af67c734d3c5055a1e5e99",
+      "caption": "Existing Command/deployment UI at 1280×720, retained by the visual pass."
+    }
+  ]
+}

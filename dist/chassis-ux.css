@@ -1,0 +1,624 @@
+/* Field catalog: quiet class index and ivory specimen sheets. */
+#modal:has(.chassis-picker) {
+  width: min(1180px, calc(100vw - 48px));
+  max-width: 1180px;
+  max-height: 90svh;
+  padding: 30px;
+  background: #1e211b;
+  border: 1px solid #c5c9b34a;
+  border-top: 2px solid var(--paper);
+  border-radius: 0;
+  box-shadow: 0 24px 90px #000b;
+}
+.registry-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-right: 36px;
+}
+.registry-heading .overline,
+.registry-heading > span {
+  display: none;
+}
+.registry-heading h2 {
+  font: 600 30px/1.15 var(--display);
+  padding: 0;
+  margin: 0;
+  letter-spacing: 0;
+}
+.chassis-picker .chassis-filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) 100px;
+  gap: 0;
+  margin: 26px 0 16px;
+  border-block: 1px solid var(--line);
+}
+.chassis-filters > button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-height: 68px;
+  padding: 12px 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--soft);
+  text-align: left;
+}
+.chassis-filters > button > strong {
+  font: 600 17px/1.2 var(--display);
+  letter-spacing: 0;
+}
+.chassis-filters > button > small {
+  font: 400 11px/1.4 var(--ui);
+  color: inherit;
+  white-space: nowrap;
+}
+.chassis-filters > button:hover {
+  background: #ded9c80a;
+  color: var(--ink);
+}
+.chassis-filters > button[aria-pressed='true'] {
+  background: #ded9c812;
+  color: var(--paper);
+  border-bottom-color: var(--orange);
+}
+.registry-guidance {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font: 400 12px/1.5 var(--ui);
+  color: var(--soft);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.registry-guidance > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+}
+.registry-guidance i {
+  display: none;
+}
+.chassis-picker .chassis-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.chassis-picker .chassis-card {
+  --ink: #282c23;
+  --soft: #5b6053;
+  --line: #4d55402e;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e3decd;
+  border-radius: 0;
+  background: linear-gradient(120deg, #e7e1d0, #d8d3c2);
+  color: var(--ink);
+  box-shadow: 0 3px 0 #0c110a99;
+  overflow: hidden;
+}
+.chassis-picker .chassis-card.selected {
+  border-color: #f3eedf;
+  box-shadow:
+    inset 3px 0 var(--orange),
+    0 3px 0 #0c110a99;
+  background: linear-gradient(120deg, #f0eada, #e2ddcc);
+}
+.platform-index {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-height: 15px;
+  color: var(--soft);
+}
+.platform-index > span {
+  display: none;
+}
+.platform-index b {
+  font: 600 12px/1.3 var(--ui);
+  color: #a4432c;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.chassis-silhouette {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  margin: 12px -20px 18px;
+  position: relative;
+  background: none;
+}
+.chassis-silhouette:after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 18%;
+  right: 18%;
+  height: 1px;
+  background: #4d55403b;
+}
+.chassis-silhouette svg {
+  width: 134px;
+  height: 134px;
+  fill: #4d55400a;
+  stroke: #4b5241;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  filter: drop-shadow(4px 5px 0 #73786316);
+}
+.chassis-card.selected .chassis-silhouette svg {
+  stroke: #a4432c;
+  fill: #a4432c06;
+}
+.chassis-picker .chassis-card-title {
+  display: block;
+}
+.chassis-picker .chassis-card-title > div {
+  display: flex;
+  flex-direction: column;
+}
+.chassis-picker .chassis-card-title small {
+  display: block;
+  font: 400 12px/1.5 var(--ui);
+  color: var(--soft);
+  letter-spacing: 0;
+  text-transform: none;
+  order: 1;
+  margin-top: 5px;
+}
+.chassis-picker .chassis-card h3 {
+  font: 600 29px/1.1 var(--display);
+  color: var(--ink);
+  margin: 5px 0 0;
+  letter-spacing: 0;
+}
+.chassis-picker .chassis-card > .platform-description {
+  font: 400 12px/1.7 var(--ui);
+  color: var(--soft);
+  margin: 14px 0 16px;
+  min-height: 42px;
+}
+.chassis-picker .chassis-card dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 16px 0;
+  border-block: 1px solid var(--line);
+}
+.chassis-picker .chassis-card dt {
+  font: 400 11px/1.5 var(--ui);
+  color: var(--soft);
+}
+.chassis-picker .chassis-card dd {
+  font: 600 23px/1.1 var(--display);
+  color: var(--ink);
+  margin: 5px 0 0;
+  letter-spacing: 0;
+}
+.chassis-card dd > small {
+  font: 400 12px var(--ui);
+}
+.chassis-picker .chassis-card .chassis-mounts {
+  font: 400 11px/1.6 var(--ui);
+  color: var(--soft);
+  margin: 12px 0 18px;
+  min-height: 0;
+}
+.chassis-picker .chassis-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  margin-top: auto;
+}
+.chassis-picker .chassis-card-actions > .button {
+  min-height: 46px;
+  padding: 12px 15px;
+  font: 600 13px/1.4 var(--ui);
+  letter-spacing: 0;
+  background: #2b3025;
+  border: 1px solid #2b3025;
+  color: #eee8d6;
+  box-shadow: inset 3px 0 var(--orange);
+}
+.chassis-picker .chassis-card-actions > .button:hover {
+  background: #414735;
+  border-color: #414735;
+  box-shadow: inset 5px 0 var(--orange);
+}
+.chassis-picker .chassis-card-actions > .text-button {
+  min-height: 42px;
+  text-align: center;
+  font: 400 12px var(--ui);
+  color: var(--soft);
+}
+.chassis-card-actions > .text-button:hover {
+  color: var(--ink);
+  background: #424a340b;
+}
+#modal.armory-dialog {
+  width: min(1040px, calc(100vw - 48px));
+  max-width: 1040px;
+  background: #1e211b;
+  border-top: 2px solid var(--paper);
+}
+.armory-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-right: 30px;
+}
+.armory-heading .overline {
+  display: none;
+}
+.armory-heading h2 {
+  padding: 0;
+  margin: 0;
+  font: 600 30px/1.15 var(--display);
+  letter-spacing: 0;
+}
+.armory-heading > span {
+  font: 400 12px var(--ui);
+  color: var(--soft);
+  white-space: nowrap;
+}
+.armory-heading > span > b {
+  font: 600 25px var(--display);
+  color: var(--paper);
+}
+.armory-intro {
+  font-size: 13px;
+  margin: 18px 0 22px;
+}
+.armory-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.armory-grid .build-card {
+  --ink: #282c23;
+  --soft: #5b6053;
+  --line: #4d55402e;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px 16px;
+  margin: 0;
+  padding: 24px;
+  border: 1px solid #e3decd;
+  background: linear-gradient(120deg, #e7e1d0, #d8d3c2);
+  border-radius: 0;
+  box-shadow: 0 3px 0 #0c110a99;
+  color: var(--ink);
+}
+.armory-machine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  color: var(--frame-paint, #9b4732);
+}
+.armory-machine svg {
+  width: 64px;
+  height: 76px;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  fill: transparent;
+  filter: none;
+}
+.armory-card-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.armory-card-meta > small {
+  font: 400 12px/1.4 var(--ui);
+  color: var(--soft);
+  text-transform: none;
+  letter-spacing: 0;
+  order: 1;
+}
+.armory-grid .build-card h3 {
+  font: 600 24px/1.2 var(--display);
+  color: var(--ink);
+  margin: 0 0 5px;
+  overflow-wrap: anywhere;
+  letter-spacing: 0;
+  order: 0;
+}
+.armory-grid .build-card p {
+  font: 400 12px/1.6 var(--ui);
+  color: var(--soft);
+  margin: 7px 0 0;
+  order: 2;
+}
+.armory-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column: 1/-1;
+  border-block: 1px solid var(--line);
+  padding: 14px 0;
+  gap: 10px;
+}
+.armory-stats > span {
+  font: 400 11px var(--ui);
+  color: var(--soft);
+}
+.armory-stats b {
+  display: block;
+  font: 600 25px/1.1 var(--display);
+  color: var(--ink);
+  margin-bottom: 5px;
+  letter-spacing: 0;
+}
+.armory-stats b > small {
+  font: 400 12px var(--ui);
+}
+.armory-grid .build-card > .armory-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  grid-column: 1/-1;
+}
+.armory-actions > .button {
+  flex: 1;
+  min-height: 46px;
+  font-size: 13px;
+  background: #2b3025;
+  border: 1px solid #2b3025;
+  color: #eee8d6;
+  box-shadow: inset 3px 0 var(--orange);
+}
+.armory-actions > .button:hover {
+  background: #414735;
+  border-color: #414735;
+  box-shadow: inset 5px 0 var(--orange);
+}
+.armory-grid .build-card .armory-delete {
+  font: 400 12px var(--ui);
+  color: var(--soft);
+  min-height: 44px;
+  padding: 10px;
+}
+.armory-grid .build-card .armory-delete:hover,
+.armory-grid .build-card .confirm-delete {
+  color: #a4432c;
+  background: #a4432c0d;
+}
+.armory-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.armory-footer > span {
+  font: 400 12px/1.6 var(--ui);
+  color: var(--soft);
+  max-width: 350px;
+}
+.armory-footer .dialog-actions {
+  margin: 0;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.armory-footer .button {
+  font-size: 12px;
+  padding: 10px 15px;
+}
+.armory-empty {
+  grid-column: 1/-1;
+  padding: 38px 24px;
+  text-align: center;
+  border-block: 1px solid var(--line);
+  background: none;
+}
+.armory-empty > span {
+  display: block;
+  color: var(--paper);
+}
+.armory-empty svg {
+  width: 80px;
+  height: 80px;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  fill: transparent;
+}
+.armory-empty h3 {
+  font: 600 27px var(--display);
+  letter-spacing: 0;
+}
+.armory-empty p {
+  max-width: 350px;
+  margin: 12px auto 20px;
+}
+@media (max-width: 850px) {
+  .chassis-picker .chassis-filters {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .chassis-picker .chassis-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .chassis-picker .chassis-card dl {
+    grid-template-columns: 1fr 1fr;
+  }
+  .armory-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  #modal:has(.chassis-picker) {
+    width: calc(100vw - 24px);
+    padding: 24px 18px;
+    max-height: 90svh;
+  }
+  .registry-heading {
+    padding-right: 28px;
+  }
+  .registry-heading h2 {
+    font-size: 25px;
+  }
+  .chassis-picker .chassis-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0;
+    margin-top: 20px;
+    padding-bottom: 0;
+  }
+  .chassis-filters > button {
+    min-width: 122px;
+    min-height: 62px;
+    padding: 12px;
+  }
+  .chassis-filters > button > strong {
+    font-size: 17px;
+  }
+  .chassis-filters > button > small {
+    font-size: 11px;
+  }
+  .registry-guidance {
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 18px;
+  }
+  .chassis-picker .chassis-cards {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .chassis-picker .chassis-card {
+    padding: 20px;
+  }
+  .chassis-silhouette {
+    min-height: 130px;
+  }
+  .chassis-silhouette svg {
+    width: 120px;
+    height: 120px;
+  }
+  .chassis-picker .chassis-card dl {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .chassis-picker .chassis-card > .platform-description {
+    font-size: 13px;
+  }
+  .chassis-picker .chassis-card h3 {
+    font-size: 29px;
+  }
+  #modal.armory-dialog {
+    width: calc(100vw - 24px);
+    padding: 26px 18px;
+  }
+  .armory-heading {
+    padding-right: 24px;
+  }
+  .armory-heading h2 {
+    font-size: 25px;
+  }
+  .armory-heading > span {
+    font-size: 11px;
+  }
+  .armory-heading > span > b {
+    font-size: 23px;
+  }
+  .armory-grid .build-card {
+    padding: 20px;
+    gap: 18px 14px;
+  }
+  .armory-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .armory-footer .dialog-actions {
+    flex-direction: row;
+  }
+  .armory-footer .button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+@media (min-width: 851px) {
+  .chassis-silhouette {
+    min-height: 110px;
+    margin-block: 8px 14px;
+  }
+  .chassis-silhouette svg {
+    width: 106px;
+    height: 106px;
+  }
+}
+#modal.armory-dialog:has(.build-card:only-child) {
+  width: min(650px, calc(100vw - 48px));
+}
+.armory-grid:has(> .build-card:only-child) {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 560px) {
+  #modal.armory-dialog:has(.build-card:only-child) {
+    width: calc(100vw - 24px);
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  #modal:has(.chassis-picker) {
+    padding: 20px 24px;
+  }
+  .registry-heading h2 {
+    font-size: 24px;
+  }
+  .chassis-picker .chassis-filters {
+    display: flex;
+    overflow-x: auto;
+    margin: 16px 0 12px;
+  }
+  .chassis-filters > button {
+    min-width: 110px;
+    min-height: 52px;
+    padding: 8px 12px;
+  }
+  .chassis-filters > button > strong {
+    font-size: 15px;
+  }
+  .chassis-filters > button > small {
+    font-size: 10px;
+  }
+  .registry-guidance {
+    gap: 8px 20px;
+    margin-bottom: 14px;
+  }
+  .chassis-picker .chassis-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .chassis-picker .chassis-card {
+    padding: 15px;
+  }
+  .chassis-picker .chassis-card h3 {
+    font-size: 23px;
+  }
+  .chassis-picker .chassis-card dl {
+    grid-template-columns: 1fr 1fr;
+  }
+  .chassis-silhouette {
+    min-height: 90px;
+    margin: 6px -15px 12px;
+  }
+  .chassis-silhouette svg {
+    width: 86px;
+    height: 86px;
+  }
+}

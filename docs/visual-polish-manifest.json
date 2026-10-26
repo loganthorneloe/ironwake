@@ -1,0 +1,139 @@
+{
+  "repository": "loganthorneloe/ironwake",
+  "base": "main",
+  "canonicalMain": "dbed1091741a9ebdf911ba796e4adf7711c19f4d",
+  "checkedAt": "2026-10-26T18:54:00Z",
+  "branch": "feature/industrial-atmosphere-20261026",
+  "worktree": "C:/Users/brend/Documents/Codex/2026-10-26/task/ironwake-visuals",
+  "implementationCommit": "9fae04af0ca16c87fd30967d5b531b055f23a9d1",
+  "integratedBaseline": "5492bdb286ce48b45fc6e66be3e50abc1482ccce",
+  "integrationStrategy": "Use the latest exact PR19 head containing canonical main and the full predecessor chain; no redundant merges or changes to existing PR branches/bases.",
+  "dependencyOrder": [
+    14,
+    16,
+    17,
+    18,
+    19
+  ],
+  "dependencies": [
+    {
+      "number": 14,
+      "title": "Add cinematic transitions and synchronized deployment loading",
+      "head": "0efb32163ea02822c9956358772b1f977bb2d457",
+      "repository": "lesniakbj/ironwake",
+      "ref": "cinematic-transitions-and-loading-pass",
+      "url": "https://github.com/loganthorneloe/ironwake/pull/14",
+      "includedByAncestry": true
+    },
+    {
+      "number": 16,
+      "title": "Integrate mech research and pilot training into the Anchorage campaign hub",
+      "head": "f6f26b8bff7b8064e952d3262d9fdef657e5f700",
+      "repository": "lesniakbj/ironwake",
+      "ref": "feature/mech-pilot-upgrade-trees",
+      "url": "https://github.com/loganthorneloe/ironwake/pull/16",
+      "includedByAncestry": true
+    },
+    {
+      "number": 17,
+      "title": "Add in-sortie upgrades, salvage tech, and resonance relays",
+      "head": "41b638f3d25e7408cc44b2e7e20174b176f35308",
+      "repository": "lesniakbj/ironwake",
+      "ref": "feature/field-progression",
+      "url": "https://github.com/loganthorneloe/ironwake/pull/17",
+      "includedByAncestry": true
+    },
+    {
+      "number": 18,
+      "title": "Redesign hangar, mission menus and combat HUD",
+      "head": "a4c7f8949f05ff3341a3a2184a553982b7051b5e",
+      "repository": "lesniakbj/ironwake",
+      "ref": "feature/ui-ux-readability",
+      "url": "https://github.com/loganthorneloe/ironwake/pull/18",
+      "includedByAncestry": true
+    },
+    {
+      "number": 19,
+      "title": "Integrate parallel workstreams and split game architecture to reduce merge conflicts",
+      "head": "5492bdb286ce48b45fc6e66be3e50abc1482ccce",
+      "repository": "loganthorneloe/ironwake",
+      "ref": "refactor/parallel-workstreams-20261025",
+      "url": "https://github.com/loganthorneloe/ironwake/pull/19",
+      "includedByAncestry": true
+    }
+  ],
+  "alreadyMerged": [
+    12,
+    15
+  ],
+  "priorWork": {
+    "source": "C:/Projects/ironwake/first-direction-integration",
+    "head": "40a07bf4a8364e403f244dab3af7d0402a1d696a",
+    "reuse": "Selected arena-dressing art vocabulary; adapted boundary structures into thin cladding on existing wall faces and omitted extra objective bases. No prior integration merges, UI or gameplay tuning replayed."
+  },
+  "isolation": {
+    "sourceRepository": "C:/Projects/ironwake/ironwake-conflict-fix",
+    "copiedWith": "git clone --no-hardlinks",
+    "originalWorktreesEdited": false,
+    "existingDirtyWorktree": "C:/Projects/ironwake/coop-enemy-scaling",
+    "existingDirtyWorkPreserved": true
+  },
+  "browserVerification": {
+    "performed": true,
+    "screenshotsCaptured": true,
+    "mainNavigation": {
+      "url": "http://127.0.0.1:4310/ironwake/",
+      "outcome": "Timed out: net::ERR_CONNECTION_TIMED_OUT"
+    },
+    "deniedInspection": {
+      "action": "cua.getTab('1', {browser:'2'})",
+      "target": "tab 1's generated data:text/html;charset=utf-8 error document for the main-navigation URL",
+      "reason": "Blocked browser navigation by Browser Use URL policy",
+      "status": "denied; stopped; not retried or bypassed"
+    },
+    "previousStoppedActions": [
+      "Navigation to http://127.0.0.1:4203/tests/field-browser.html",
+      "Separate data:error tab cleanup"
+    ],
+    "captureFollowup": {
+      "runtime": "92011c2c81b84da82994f38572a5dc729444ecd2",
+      "media": "docs/pr-media/visual-polish",
+      "captures": 6,
+      "normalGame": true,
+      "fixtureAssistance": false,
+      "priorDeniedActionsRetried": false
+    }
+  },
+  "gates": [
+    "Broader nine-arena Full/Reduced and landscape contrast/occlusion acceptance",
+    "Physical low-end/mobile GPU performance and physical touch validation",
+    "Complete interrupted deploy/cancel/retry/feedback lifecycle replay",
+    "Manually played campaign victory",
+    "Independent remote squad validation",
+    "Independent review and approval"
+  ],
+  "publicationConstraints": {
+    "draft": true,
+    "baseRepository": "loganthorneloe/ironwake",
+    "baseBranch": "main",
+    "merge": false,
+    "autoMerge": false,
+    "deployment": false,
+    "forcePush": false,
+    "existingPRBasesChanged": false
+  },
+  "implementationCommits": [
+    "9fae04af0ca16c87fd30967d5b531b055f23a9d1",
+    "185d41c37661f4af4c1bcadd838a5146d7b5d45f"
+  ],
+  "publication": {
+    "url": "https://github.com/loganthorneloe/ironwake/pull/20",
+    "draft": true,
+    "maintainerCanModify": false,
+    "initialCI": {
+      "run": 40382213988,
+      "conclusion": "success",
+      "sha": "70dde2303a2fcf29ff770ea174b7a87480cb8fbd"
+    }
+  }
+}

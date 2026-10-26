@@ -7,6 +7,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "format": "prettier --write \"dist/**/*.{js,css}\" \"worker/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.test.js\"",
+    "format:check": "prettier --check \"dist/**/*.{js,css}\" \"worker/**/*.js\" \"scripts/**/*.mjs\" \"tests/**/*.test.js\"",
+    "architecture:check": "node scripts/check-architecture.mjs",
+    "architecture:report": "node scripts/check-architecture.mjs --report",
     "test": "node --test tests/*.test.js",
     "build:info": "node scripts/build-info.mjs",
     "version": "node scripts/build-info.mjs",
@@ -19,6 +23,7 @@
     "deploy": "wrangler deploy"
   },
   "devDependencies": {
+    "prettier": "3.6.2",
     "wrangler": "4.151.1"
   }
 }

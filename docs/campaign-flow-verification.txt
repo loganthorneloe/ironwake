@@ -1,0 +1,294 @@
+Actual game iframe; local mock PeerJS host and synthetic outcomes. Desktop checks.
+
+1:37:33 PM  Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.
+1:37:44 PM  hello accepted for PILOT-YG5EQGPZ; real roster progression retained.
+1:37:45 PM  Actual Join squad controls connected the guest to deterministic local transport.
+1:38:54 PM  loadout received; guest readiness cleared; progression {"mech":[],"pilot":["tactics.1","tactics.2","systems.1","systems.2"]}
+1:38:55 PM  loadout received; guest readiness cleared; progression {"mech":["vanguard.frame.1"],"pilot":["tactics.1","tactics.2","systems.1","systems.2"]}
+1:38:55 PM  ready received: true (campaign revision 2).
+1:39:00 PM  loadout received; guest readiness cleared; progression {"mech":["vanguard.frame.1","vanguard.frame.2"],"pilot":["tactics.1","tactics.2","systems.1","systems.2"]}
+1:39:01 PM  ready received: true (campaign revision 2).
+1:39:01 PM  PASS  deployment preserves the actual purchased career ranks.
+1:39:01 PM  PASS  deployment carries the guest run modules.
+1:39:01 PM  Host start message deployed ASHGATE DEPOT through the actual startView path.
+1:39:06 PM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+1:39:06 PM  Saved totals: 8 vanguard research, 8 pilot points.
+1:39:06 PM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+1:39:06 PM  PASS  return does not award the same career round twice.
+1:39:06 PM  PASS  the real guest return handler enters Anchorage.
+1:39:06 PM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+1:39:45 PM  refit installed through real Run supplies UI; squad readiness cleared.
+1:39:46 PM  mock connection closed; real app resets its network state.
+1:39:46 PM  PASS  career purchases and rewards survive an actual game reload.
+1:39:46 PM  Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.
+1:39:46 PM  hello accepted for PILOT-YG5EQGPZ; real roster progression retained.
+1:39:47 PM  Actual Join squad controls connected the guest to deterministic local transport.
+1:39:57 PM  ready received: true (campaign revision 4).
+1:39:57 PM  PASS  deployment preserves the actual purchased career ranks.
+1:39:57 PM  PASS  deployment carries the guest run modules.
+1:39:57 PM  Host start message deployed GLASSWATER SPILLWAY through the actual startView path.
+1:39:57 PM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+1:39:57 PM  Saved totals: 9 vanguard research, 9 pilot points.
+1:39:57 PM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+1:39:57 PM  PASS  return does not award the same career round twice.
+1:39:57 PM  PASS  the real guest return handler enters Anchorage.
+1:39:57 PM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+1:40:19 PM  ready received: true (campaign revision 5).
+1:40:20 PM  PASS  deployment preserves the actual purchased career ranks.
+1:40:20 PM  PASS  deployment carries the guest run modules.
+1:40:20 PM  Host start message deployed RELAY NINE through the actual startView path.
+1:40:20 PM  PASS  defeat gives no career reward.
+1:40:20 PM  Saved totals: 9 vanguard research, 9 pilot points.
+1:40:20 PM  Synthetic defeat settled with the real campaign/armory models. Use Host returns to hub separately.
+1:40:20 PM  PASS  return does not award the same career round twice.
+1:40:20 PM  PASS  the real guest return handler enters Anchorage.
+1:40:20 PM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+1:40:20 PM  Started a fresh synthetic host campaign; personal career and shared armory remain.
+
+Phone-width checks (390px outer viewport): station purchase passed; no station overflow. Mark ready after defeat: disabled; after a fresh host run: enabled without reloading.
+
+1:42:54 PM  mock connection closed; real app resets its network state.
+1:42:54 PM  PASS  career purchases and rewards survive an actual game reload.
+1:42:54 PM  Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.
+1:42:54 PM  hello accepted for PILOT-YG5EQGPZ; real roster progression retained.
+1:42:55 PM  Actual Join squad controls connected the guest to deterministic local transport.
+1:42:57 PM  ready received: true (campaign revision 2).
+1:42:57 PM  PASS  deployment preserves the actual purchased career ranks.
+1:42:57 PM  PASS  deployment carries the guest run modules.
+1:42:57 PM  Host start message deployed ASHGATE DEPOT through the actual startView path.
+1:42:58 PM  PASS  defeat gives no career reward.
+1:42:58 PM  Saved totals: 9 vanguard research, 9 pilot points.
+1:42:58 PM  Synthetic defeat settled with the real campaign/armory models. Use Host returns to hub separately.
+1:42:58 PM  PASS  return does not award the same career round twice.
+1:42:58 PM  PASS  the real guest return handler enters Anchorage.
+1:42:58 PM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+1:42:58 PM  Started a fresh synthetic host campaign; personal career and shared armory remain.
+1:42:58 PM  ready received: true (campaign revision 2).
+1:42:59 PM  PASS  deployment preserves the actual purchased career ranks.
+1:42:59 PM  PASS  deployment carries the guest run modules.
+1:42:59 PM  Host start message deployed ASHGATE DEPOT through the actual startView path.
+1:42:59 PM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+1:42:59 PM  Saved totals: 10 vanguard research, 10 pilot points.
+1:42:59 PM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+1:42:59 PM  PASS  return does not award the same career round twice.
+1:42:59 PM  PASS  the real guest return handler enters Anchorage.
+1:42:59 PM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+1:43:26 PM  mock connection closed; real app resets its network state.
+1:43:26 PM  PASS  career purchases and rewards survive an actual game reload.
+1:43:26 PM  Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.
+1:43:26 PM  hello accepted for PILOT-YG5EQGPZ; real roster progression retained.
+1:43:27 PM  Actual Join squad controls connected the guest to deterministic local transport.
+
+PR16 navigation review follow-up / 2026-10-25
+- Reproduced review r4372037349 from the real arrival spawn via (10,19), (10,-22), (0,-22): old route remains blocked behind Command after 50 seconds.
+- Added collision-aware hubRoute and follower regressions using actual stepHub, including all five stations, capped frame steps, repeated visits, guest packet cadence and invalid endpoints.
+- Automated coverage: 325/325 tests passed; production Wrangler deployment dry run passed with current main feedback bindings. Syntax and whitespace checks passed.
+- Independent actual-movement sweep: 4,075 routes from every walkable 2m grid point to all five stations, zero stalls or invalid arrivals.
+- Rendered game / local mock PeerJS transport: guest physically walked behind Command, then real station controls reached Parts foundry and The arsenal. Phone-width guest reached Signal archive and opened pilot training. No teleport was used for the rear-strip setup.
+- Feedback compatibility: desktop F8 captured a nonblank 1280x640 hub preview, cancelled local navigation and isolated movement/E input; closing resumed normal station navigation. Phone-width Report access and automatic capture also passed. No feedback report was submitted.
+- Media: hub-rear-deck-navigation.gif records actual guest movement around Command to the chassis research station; hub-feedback-capture.jpg shows the rendered hub report preview. Captures used working changes before the final review commit.
+- These checks use deterministic local host transport. Live WAN squad play, a manually played full campaign and balance tuning remain outstanding; keep PR16 draft.
+
+
+Sequential PR16 integration / 2026-10-26
+Included canonical main: dbed1091741a9ebdf911ba796e4adf7711c19f4d
+Included finalized PR14: 0efb32163ea02822c9956358772b1f977bb2d457 (cinematic-transitions-and-loading-pass). Main was already an ancestor of PR14; PR14 was not an ancestor of main, so both were integrated explicitly on the existing branch.
+
+Implementation: combined career/hub payloads with ticketed full-intro readiness and cancellation; retained personal saves, armory/refits, feedback controls and voices. One cache-versioned audio module owns voice/combat/transition sound. Critical-hull voice thresholds now use combatStats, matching researched armor in the HUD. Bumped both room protocols for the combined wire format. Entry-asset regressions guard missing cinematic stylesheets, duplicate IDs and lost voice/report/hub controls.
+
+Validation:
+- 342/342 Node tests passed (0 failed/skipped); production Wrangler dry-run build passed with all feedback bindings. JavaScript syntax and whitespace checks passed.
+- Real PeerJS signaling + WebRTC, two game tabs on one machine: hosting/joining, station navigation, readiness, cancellation before combat (both clients returned with active mission unchanged), retry, loading/reveal/insertion/full title hold, synchronized combat, defeat/results, Anchorage return and a fresh campaign. This is real transport on one machine, not an independent remote/WAN squad.
+- Desktop voice selection/actual Echo preview and retained voice choice; phone-width 390x844 hub/station with no horizontal vendor overflow. Verified cinematic.css is loaded and its fixed overlay fills 390x844. Phone live deployment, F8 report access and hub screenshot capture worked; no report was submitted.
+- Deterministic local host fixture drove the actual guest UI through all NINE missions to run won, with full intro readiness every round, unchanged precombat world/saves, unique retry tickets/stale-ticket rejection, cancellation before combat, career and run-module snapshots, refit spending, deduplicated reward/return, and the 18-point career cap. Synthetic outcomes do not establish manual combat or objective completion.
+- Chassis certification was purchased successfully after fixture campaign completion.
+
+Readiness: keep PR16 DRAFT under review 5644796680. A manually played nine-mission victory and an independent remote-player/WAN squad session have not been completed. The actual two-tab runs ended in defeat; the nine wins were synthetic fixture outcomes. No tool approval denied PR16 checks; this is outstanding material playtest coverage, not an independent-review approval wait. PR17's guarded browser action and unverified landscape change were not touched.
+
+Fixture event record:
+10:52:42 AM  Actual dist/index.html loaded; PeerJS replaced only inside this local iframe.
+10:53:04 AM  hello accepted for PILOT-YG5EQGPZ; real roster progression retained.
+10:53:05 AM  Actual Join squad controls connected the guest to deterministic local transport.
+10:53:05 AM  ready received: true (campaign revision 2).
+10:53:05 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+10:53:05 AM  PASS  cancel before combat leaves the active campaign unchanged.
+10:53:05 AM  PASS  cancel before combat leaves career points and rewards unchanged.
+10:53:05 AM  PASS  cancel before combat leaves the shared armory unchanged.
+10:53:05 AM  PASS  cancelled deployment never advanced the synthetic world.
+10:53:05 AM  PASS  real return message cancels insertion and restores Anchorage.
+10:53:05 AM  PASS  cancelled deployment clears the actual cinematic overlay.
+10:53:05 AM  Host cancelled deployment. Ready up and retry the same mission with a new ticket.
+10:53:25 AM  ready received: true (campaign revision 2).
+10:53:25 AM  PASS  retry uses a new deployment ticket.
+10:53:25 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+10:53:25 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+10:53:31 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+10:53:31 AM  PASS  synthetic host world did not advance before combat launch.
+10:53:31 AM  PASS  loading and insertion do not grant career rewards.
+10:53:31 AM  PASS  loading and insertion preserve campaign and shared armory.
+10:53:31 AM  Guest full-intro readiness arrived for fixture-drop-2-50d00053-7f03-412a-bcd7-495503a5e948.
+10:53:31 AM  PASS  matching combat-live ticket hands the real game to combat.
+10:53:31 AM  PASS  deployment preserves the actual purchased career ranks.
+10:53:31 AM  PASS  deployment carries the guest run modules.
+10:53:31 AM  Readiness barrier released; synthetic world advancement is now enabled.
+10:54:16 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+10:54:16 AM  Saved totals: 11 vanguard research, 11 pilot points.
+10:54:16 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+10:54:17 AM  PASS  return does not award the same career round twice.
+10:54:17 AM  PASS  the real guest return handler enters Anchorage.
+10:54:17 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:05:26 AM  ready received: true (campaign revision 3).
+11:05:26 AM  PASS  retry uses a new deployment ticket.
+11:05:26 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:05:26 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:05:32 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:05:32 AM  PASS  synthetic host world did not advance before combat launch.
+11:05:32 AM  PASS  loading and insertion do not grant career rewards.
+11:05:32 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:05:32 AM  Guest full-intro readiness arrived for fixture-drop-3-bac59267-c26c-42f5-926b-0c7c5c967d0d.
+11:05:32 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:05:32 AM  PASS  deployment preserves the actual purchased career ranks.
+11:05:32 AM  PASS  deployment carries the guest run modules.
+11:05:32 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:05:32 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:05:32 AM  Saved totals: 12 vanguard research, 12 pilot points.
+11:05:32 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:05:32 AM  PASS  return does not award the same career round twice.
+11:05:32 AM  PASS  the real guest return handler enters Anchorage.
+11:05:32 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:05:32 AM  ready received: true (campaign revision 4).
+11:05:32 AM  PASS  retry uses a new deployment ticket.
+11:05:32 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:05:32 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:05:38 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:05:38 AM  PASS  synthetic host world did not advance before combat launch.
+11:05:38 AM  PASS  loading and insertion do not grant career rewards.
+11:05:38 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:05:38 AM  Guest full-intro readiness arrived for fixture-drop-4-1925cbd5-c498-4cb8-8683-e1bda7f56419.
+11:05:38 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:05:38 AM  PASS  deployment preserves the actual purchased career ranks.
+11:05:38 AM  PASS  deployment carries the guest run modules.
+11:05:38 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:05:38 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:05:38 AM  Saved totals: 13 vanguard research, 13 pilot points.
+11:05:38 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:05:38 AM  PASS  return does not award the same career round twice.
+11:05:38 AM  PASS  the real guest return handler enters Anchorage.
+11:05:38 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:05:39 AM  ready received: true (campaign revision 5).
+11:05:39 AM  PASS  retry uses a new deployment ticket.
+11:05:39 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:05:39 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:05:44 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:05:44 AM  PASS  synthetic host world did not advance before combat launch.
+11:05:44 AM  PASS  loading and insertion do not grant career rewards.
+11:05:44 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:05:44 AM  Guest full-intro readiness arrived for fixture-drop-5-5d3f8162-3e88-4155-937f-fca864b9cb8e.
+11:05:44 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:05:44 AM  PASS  deployment preserves the actual purchased career ranks.
+11:05:44 AM  PASS  deployment carries the guest run modules.
+11:05:44 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:05:45 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:05:45 AM  Saved totals: 14 vanguard research, 14 pilot points.
+11:05:45 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:05:45 AM  PASS  return does not award the same career round twice.
+11:05:45 AM  PASS  the real guest return handler enters Anchorage.
+11:05:45 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:05:45 AM  ready received: true (campaign revision 6).
+11:05:45 AM  PASS  retry uses a new deployment ticket.
+11:05:45 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:05:45 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:05:51 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:05:51 AM  PASS  synthetic host world did not advance before combat launch.
+11:05:51 AM  PASS  loading and insertion do not grant career rewards.
+11:05:51 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:05:51 AM  Guest full-intro readiness arrived for fixture-drop-6-072bf4bf-fabe-4dda-8e0d-c85deffd7bd4.
+11:05:51 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:05:51 AM  PASS  deployment preserves the actual purchased career ranks.
+11:05:51 AM  PASS  deployment carries the guest run modules.
+11:05:51 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:05:51 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:05:51 AM  Saved totals: 15 vanguard research, 15 pilot points.
+11:05:51 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:05:51 AM  PASS  return does not award the same career round twice.
+11:05:51 AM  PASS  the real guest return handler enters Anchorage.
+11:05:51 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:06:36 AM  refit installed through real Run supplies UI; squad readiness cleared.
+11:06:37 AM  ready received: true (campaign revision 8).
+11:06:37 AM  PASS  retry uses a new deployment ticket.
+11:06:37 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:06:37 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:06:43 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:06:43 AM  PASS  synthetic host world did not advance before combat launch.
+11:06:43 AM  PASS  loading and insertion do not grant career rewards.
+11:06:43 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:06:43 AM  Guest full-intro readiness arrived for fixture-drop-7-2427b504-1204-4251-832e-dc84f6aeb58f.
+11:06:43 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:06:43 AM  PASS  deployment preserves the actual purchased career ranks.
+11:06:43 AM  PASS  deployment carries the guest run modules.
+11:06:43 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:06:43 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:06:43 AM  Saved totals: 16 vanguard research, 16 pilot points.
+11:06:43 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:06:43 AM  PASS  return does not award the same career round twice.
+11:06:43 AM  PASS  the real guest return handler enters Anchorage.
+11:06:43 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:06:43 AM  ready received: true (campaign revision 9).
+11:06:44 AM  PASS  retry uses a new deployment ticket.
+11:06:44 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:06:44 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:06:49 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:06:49 AM  PASS  synthetic host world did not advance before combat launch.
+11:06:49 AM  PASS  loading and insertion do not grant career rewards.
+11:06:49 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:06:49 AM  Guest full-intro readiness arrived for fixture-drop-8-10ae3632-e0a8-4a1f-9371-ddd5baf436ee.
+11:06:49 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:06:49 AM  PASS  deployment preserves the actual purchased career ranks.
+11:06:49 AM  PASS  deployment carries the guest run modules.
+11:06:49 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:06:49 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:06:49 AM  Saved totals: 17 vanguard research, 17 pilot points.
+11:06:49 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:06:49 AM  PASS  return does not award the same career round twice.
+11:06:49 AM  PASS  the real guest return handler enters Anchorage.
+11:06:49 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:06:50 AM  ready received: true (campaign revision 10).
+11:06:50 AM  PASS  retry uses a new deployment ticket.
+11:06:50 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:06:50 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:06:56 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:06:56 AM  PASS  synthetic host world did not advance before combat launch.
+11:06:56 AM  PASS  loading and insertion do not grant career rewards.
+11:06:56 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:06:56 AM  Guest full-intro readiness arrived for fixture-drop-9-e87129d0-1c4e-4006-9415-0d67932281f1.
+11:06:56 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:06:56 AM  PASS  deployment preserves the actual purchased career ranks.
+11:06:56 AM  PASS  deployment carries the guest run modules.
+11:06:56 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:06:56 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:06:56 AM  Saved totals: 18 vanguard research, 18 pilot points.
+11:06:56 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:06:56 AM  PASS  return does not award the same career round twice.
+11:06:56 AM  PASS  the real guest return handler enters Anchorage.
+11:06:56 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+11:06:56 AM  ready received: true (campaign revision 11).
+11:06:56 AM  PASS  retry uses a new deployment ticket.
+11:06:56 AM  PASS  a stale previous combat-live ticket cannot release the new deployment.
+11:06:56 AM  Ticketed host start entered the real loading/insertion path; waiting for full guest intro readiness.
+11:07:02 AM  PASS  the actual guest completed the full intro before acknowledging readiness.
+11:07:02 AM  PASS  synthetic host world did not advance before combat launch.
+11:07:02 AM  PASS  loading and insertion do not grant career rewards.
+11:07:02 AM  PASS  loading and insertion preserve campaign and shared armory.
+11:07:02 AM  Guest full-intro readiness arrived for fixture-drop-10-fd21afd4-0cc4-45bb-b701-8d17cbc4417c.
+11:07:02 AM  PASS  matching combat-live ticket hands the real game to combat.
+11:07:02 AM  PASS  deployment preserves the actual purchased career ranks.
+11:07:02 AM  PASS  deployment carries the guest run modules.
+11:07:02 AM  Readiness barrier released; synthetic world advancement is now enabled.
+11:07:02 AM  PASS  the real final-snapshot handler saves one deduplicated guest career reward.
+11:07:02 AM  Saved totals: 18 vanguard research, 18 pilot points.
+11:07:02 AM  Synthetic victory settled with the real campaign/armory models. Use Host returns to hub separately.
+11:07:02 AM  PASS  return does not award the same career round twice.
+11:07:02 AM  PASS  the real guest return handler enters Anchorage.
+11:07:02 AM  Guest returned; real Command, Run supplies, Parts foundry and Signal archive controls are available.
+
+Fresh-load follow-up: the cache-versioned shared audio module initialized with Voice: Echo retained. During an actual new fixture deployment, F8 then Escape closed only the report while sceneFlow remained loading and the host fixture remained DEPLOYING. No cancellation or premature combat occurred.

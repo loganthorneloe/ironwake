@@ -1,8 +1,219 @@
-.demolition-brief{max-width:1000px}.demolition-brief h2{font:900 clamp(30px,5vw,58px)/.95 Arial,sans-serif;letter-spacing:-2px;color:#eff3dc;margin:18px 0}.demolition-intro{max-width:650px;color:#b9c6b4;line-height:1.6}.demolition-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:25px 0}.demolition-cards button{text-align:left;display:flex;flex-direction:column;gap:15px;background:linear-gradient(155deg,#293d39,#172625);border:1px solid #6f8270;border-top:3px solid #d4b079;padding:22px;color:#d8e5cb;cursor:pointer;min-height:270px}.demolition-cards button:hover,.demolition-cards button:focus-visible{border-color:#c5f8ad;background:#304739;outline:2px solid #c5f8ad;outline-offset:3px}.demolition-cards small{font:10px monospace;color:#d7b77c;line-height:1.5}.demolition-cards strong{font:900 24px/1 Arial,sans-serif;letter-spacing:-1px}.demolition-cards span{font-size:13px;line-height:1.65;color:#b9caba}.demolition-cards b{font-size:11px;letter-spacing:1px;margin-top:auto;color:#bafa9a}.demolition-tools{display:flex;gap:16px;align-items:center;padding:16px 0;border-block:1px solid #52634d}.demolition-tools span,.demolition-note{font-size:12px;line-height:1.7;color:#a6b69e}.demolition-note{margin-bottom:0}
-body[data-lab=destruction] #modal:has(.demolition-brief){width:min(1060px,94vw);max-width:1060px;max-height:94vh}#destructionLab{color:#e9bf79;border:1px solid #8d764d;padding:6px 10px}
-#destructionTelemetry{position:absolute;top:76px;left:24px;width:min(430px,calc(100% - 48px));z-index:6;background:#172a22ed;border:1px solid #75866a;border-left:3px solid #e7b16b;color:#cee5b9;padding:12px 14px;font:10px/1.5 monospace;pointer-events:auto}#destructionTelemetry[hidden]{display:none}#destructionTelemetry>div{display:flex;justify-content:space-between;gap:10px;color:#ecc58a;letter-spacing:1px}#destructionTelemetry p{display:flex;gap:15px;flex-wrap:wrap;margin:8px 0 3px}#destructionTelemetry p span{display:flex;flex-direction:column;color:#a4b998}#destructionTelemetry strong{color:#e7f7d3;font-size:14px}#destructionTelemetry small{font-size:9px;color:#98b18e}#restartDemolition{display:block;margin-top:7px;border:0;background:none;padding:0;color:#e5c78d;font:10px monospace;cursor:pointer}#restartDemolition:disabled{opacity:.4;cursor:default}
-@media(max-width:800px){.demolition-cards{grid-template-columns:1fr}.demolition-cards button{min-height:180px}.demolition-tools{align-items:flex-start;flex-direction:column;gap:4px}.demolition-brief h2{font-size:38px}#destructionTelemetry{top:100px;left:20px;width:215px;padding:8px}#destructionTelemetry>div{display:block}#destructionTelemetry>div span{display:block;font-size:9px}#destructionTelemetry p{gap:9px}#destructionTelemetry strong{font-size:12px}#destructionTelemetry small{display:none}}
-#demolitionScenarioLabel{display:flex;gap:8px;align-items:center;margin:8px 0;color:#a7c096}#demolitionScenarioLabel[hidden]{display:none}#demolitionScenario{max-width:180px;background:#16271d;color:#d3e9b9;border:1px solid #66775b;padding:3px;font:10px monospace}
-#destructionTelemetry{top:calc(104px + var(--squad-extra,0px))}@media(max-width:800px){#destructionTelemetry{top:calc(124px + var(--squad-extra,0px))}}
-#demolitionMemory{display:block}
-#destructionTelemetry p span{flex:0 0 auto;min-width:52px;white-space:nowrap}
+.demolition-brief {
+  max-width: 1000px;
+}
+.demolition-brief h2 {
+  font:
+    900 clamp(30px, 5vw, 58px) / 0.95 Arial,
+    sans-serif;
+  letter-spacing: -2px;
+  color: #eff3dc;
+  margin: 18px 0;
+}
+.demolition-intro {
+  max-width: 650px;
+  color: #b9c6b4;
+  line-height: 1.6;
+}
+.demolition-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 25px 0;
+}
+.demolition-cards button {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: linear-gradient(155deg, #293d39, #172625);
+  border: 1px solid #6f8270;
+  border-top: 3px solid #d4b079;
+  padding: 22px;
+  color: #d8e5cb;
+  cursor: pointer;
+  min-height: 270px;
+}
+.demolition-cards button:hover,
+.demolition-cards button:focus-visible {
+  border-color: #c5f8ad;
+  background: #304739;
+  outline: 2px solid #c5f8ad;
+  outline-offset: 3px;
+}
+.demolition-cards small {
+  font: 10px monospace;
+  color: #d7b77c;
+  line-height: 1.5;
+}
+.demolition-cards strong {
+  font:
+    900 24px/1 Arial,
+    sans-serif;
+  letter-spacing: -1px;
+}
+.demolition-cards span {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #b9caba;
+}
+.demolition-cards b {
+  font-size: 11px;
+  letter-spacing: 1px;
+  margin-top: auto;
+  color: #bafa9a;
+}
+.demolition-tools {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-block: 1px solid #52634d;
+}
+.demolition-tools span,
+.demolition-note {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #a6b69e;
+}
+.demolition-note {
+  margin-bottom: 0;
+}
+body[data-lab='destruction'] #modal:has(.demolition-brief) {
+  width: min(1060px, 94vw);
+  max-width: 1060px;
+  max-height: 94vh;
+}
+#destructionLab {
+  color: #e9bf79;
+  border: 1px solid #8d764d;
+  padding: 6px 10px;
+}
+#destructionTelemetry {
+  position: absolute;
+  top: 76px;
+  left: 24px;
+  width: min(430px, calc(100% - 48px));
+  z-index: 6;
+  background: #172a22ed;
+  border: 1px solid #75866a;
+  border-left: 3px solid #e7b16b;
+  color: #cee5b9;
+  padding: 12px 14px;
+  font: 10px/1.5 monospace;
+  pointer-events: auto;
+}
+#destructionTelemetry[hidden] {
+  display: none;
+}
+#destructionTelemetry > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #ecc58a;
+  letter-spacing: 1px;
+}
+#destructionTelemetry p {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 8px 0 3px;
+}
+#destructionTelemetry p span {
+  display: flex;
+  flex-direction: column;
+  color: #a4b998;
+}
+#destructionTelemetry strong {
+  color: #e7f7d3;
+  font-size: 14px;
+}
+#destructionTelemetry small {
+  font-size: 9px;
+  color: #98b18e;
+}
+#restartDemolition {
+  display: block;
+  margin-top: 7px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #e5c78d;
+  font: 10px monospace;
+  cursor: pointer;
+}
+#restartDemolition:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+@media (max-width: 800px) {
+  .demolition-cards {
+    grid-template-columns: 1fr;
+  }
+  .demolition-cards button {
+    min-height: 180px;
+  }
+  .demolition-tools {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .demolition-brief h2 {
+    font-size: 38px;
+  }
+  #destructionTelemetry {
+    top: 100px;
+    left: 20px;
+    width: 215px;
+    padding: 8px;
+  }
+  #destructionTelemetry > div {
+    display: block;
+  }
+  #destructionTelemetry > div span {
+    display: block;
+    font-size: 9px;
+  }
+  #destructionTelemetry p {
+    gap: 9px;
+  }
+  #destructionTelemetry strong {
+    font-size: 12px;
+  }
+  #destructionTelemetry small {
+    display: none;
+  }
+}
+#demolitionScenarioLabel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0;
+  color: #a7c096;
+}
+#demolitionScenarioLabel[hidden] {
+  display: none;
+}
+#demolitionScenario {
+  max-width: 180px;
+  background: #16271d;
+  color: #d3e9b9;
+  border: 1px solid #66775b;
+  padding: 3px;
+  font: 10px monospace;
+}
+#destructionTelemetry {
+  top: calc(104px + var(--squad-extra, 0px));
+}
+@media (max-width: 800px) {
+  #destructionTelemetry {
+    top: calc(124px + var(--squad-extra, 0px));
+  }
+}
+#demolitionMemory {
+  display: block;
+}
+#destructionTelemetry p span {
+  flex: 0 0 auto;
+  min-width: 52px;
+  white-space: nowrap;
+}

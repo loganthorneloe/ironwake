@@ -1,0 +1,40 @@
+// Legacy frame definitions used for migration and balance references.
+
+export const FRAMES = {
+  scout: {
+    name: 'SCOUT',
+    role: 'FLANKER',
+    hp: 90,
+    speed: 360,
+    cost: 2,
+    boost: 1.85,
+    lift: 185,
+    flightCost: 18,
+    dodge: 3.6,
+    desc: 'Light interceptor. Fast lift, long boosts, minimal armor.',
+  },
+  striker: {
+    name: 'STRIKER',
+    role: 'VERSATILE',
+    hp: 125,
+    speed: 300,
+    cost: 3,
+    boost: 1.7,
+    lift: 155,
+    flightCost: 20,
+    dodge: 3.4,
+    desc: 'Balanced assault frame. Responsive on deck and in flight.',
+  },
+  bulwark: {
+    name: 'BULWARK',
+    role: 'ANCHOR',
+    hp: 175,
+    speed: 240,
+    cost: 4,
+    boost: 1.5,
+    lift: 125,
+    flightCost: 24,
+    dodge: 3.05,
+    desc: 'Heavy siege frame. Broad armor, weighty strides, shorter flights.',
+  },
+};

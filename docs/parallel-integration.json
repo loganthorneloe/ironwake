@@ -1,0 +1,88 @@
+{
+  "canonicalRepository": "loganthorneloe/ironwake",
+  "baseBranch": "main",
+  "baseRevision": "dbed1091741a9ebdf911ba796e4adf7711c19f4d",
+  "integrationBranch": "refactor/parallel-workstreams-20261025",
+  "pullRequests": [
+    {
+      "number": 12,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/12",
+      "title": "Add selectable pilot voices and English combat callouts",
+      "source": "lesniakbj:feature/anime-pilot-callouts",
+      "revision": "44b9a62f2b73b08db266947f2ca737e590a725b2"
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/14",
+      "title": "Add cinematic transitions and synchronized deployment loading",
+      "source": "lesniakbj:cinematic-transitions-and-loading-pass",
+      "revision": "0efb32163ea02822c9956358772b1f977bb2d457"
+    },
+    {
+      "number": 16,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/16",
+      "title": "Integrate mech research and pilot training into the Anchorage campaign hub",
+      "source": "lesniakbj:feature/mech-pilot-upgrade-trees",
+      "revision": "f6f26b8bff7b8064e952d3262d9fdef657e5f700"
+    },
+    {
+      "number": 17,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/17",
+      "title": "Add in-sortie upgrades, salvage tech, and resonance relays",
+      "source": "lesniakbj:feature/field-progression",
+      "revision": "41b638f3d25e7408cc44b2e7e20174b176f35308"
+    },
+    {
+      "number": 18,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/18",
+      "title": "Improve UI readability and focus across menus, workshop and combat",
+      "source": "lesniakbj:feature/ui-ux-readability",
+      "revision": "a4c7f8949f05ff3341a3a2184a553982b7051b5e"
+    }
+  ],
+  "originalBaseRevision": "69616e928a2160dbddf07a95c579fbb1310afa6f",
+  "originalPullRequests": [
+    {
+      "number": 12,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/12",
+      "title": "Add selectable pilot voices and English combat callouts",
+      "source": "lesniakbj:feature/anime-pilot-callouts",
+      "revision": "44b9a62f2b73b08db266947f2ca737e590a725b2"
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/14",
+      "title": "Add cinematic transitions and synchronized deployment loading",
+      "source": "lesniakbj:cinematic-transitions-and-loading-pass",
+      "revision": "b139b5cb33d90b01654c13c17a77f4a496ac9063"
+    },
+    {
+      "number": 16,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/16",
+      "title": "Integrate mech research and pilot training into the Anchorage campaign hub",
+      "source": "lesniakbj:feature/mech-pilot-upgrade-trees",
+      "revision": "1b665c2953fc01a2c630741cf3fe974793b92b33"
+    },
+    {
+      "number": 17,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/17",
+      "title": "Add in-sortie upgrades, salvage tech, and resonance relays",
+      "source": "lesniakbj:feature/field-progression",
+      "revision": "a340e65099228fc5a1c1f4b12ea2959d0d35e9bc"
+    },
+    {
+      "number": 18,
+      "url": "https://github.com/loganthorneloe/ironwake/pull/18",
+      "title": "Improve UI readability and focus across menus, workshop and combat",
+      "source": "lesniakbj:feature/ui-ux-readability",
+      "revision": "abe1ce03c38c37f5d491c6a4aa365834504748f1"
+    }
+  ],
+  "previousPublishedRevision": "bbdb658f3cc0568072af80a31dc8546806dc6358",
+  "precedingPullRequest": {
+    "number": 18,
+    "revision": "a4c7f8949f05ff3341a3a2184a553982b7051b5e"
+  },
+  "updatedOn": "2026-10-26",
+  "preservedLandscapeRevision": "84f590ae2137e1b4511499b77f6315dba9713881"
+}

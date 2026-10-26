@@ -1,224 +1,2198 @@
-import {createFrameCapture,installFeedback} from './feedback.js';
-import{ENEMY_ROLES}from './enemy-behaviors.js';
-import {destructionMission,destructionMarkers} from './destruction-mission.js';
-import {createDestructionLab,destructionLabEnabled} from './destruction-lab.js';
-import{campaignRound}from './mission-catalog.js';
-// Both room endpoints require the integrated chassis and item catalogs.
-const ROOM_PROTOCOL=destructionLabEnabled?'ironwake-demolition-enemy-behaviors-v1-':'ironwake-enemy-behaviors-v1-';
-import{HEAVY_EQUIPMENT,chassisFor,chassisBlueprint}from './chassis.js';
-import{chassisPickerMarkup}from './chassis-view.js';
-import {CONTRACTS,sortieReport} from './sortie-progression.js';
-import {createSortieHud,debriefMarkup} from './sortie-view.js';
-import{impactMode,toggleImpactMode,impactLevel}from './impact-preferences.js';
-import{newCampaign,cleanCampaign,LANDINGS,campaignMission,recordSortie,installRefit,registerPilot}from './campaign.js';
-import{createCampaignView,CAMPAIGN_MECHS}from './campaign-view.js';
-import{createCallsign,validCallsign}from './pilot.js';
-import{receiveLegacyMechs}from './migration.js';
+import { createCombatHud } from './app/combat-hud.js';
+import { createWorldLabels } from './app/world-labels.js';
+import { createManual } from './app/manual.js';
+import { installPreviewOrbit } from './app/preview-orbit.js';
+import { createDeploymentController } from './app/deployment-controller.js';
+import { roomProtocol } from './network/protocol.js';
+import { createFrameCapture, installFeedback } from './feedback.js';
+import { prepareDialog } from './interface-ux.js?v=ui-stack-1';
+import { updateWorkshopWorkbench, getWorkshopPreview } from './workshop-ux.js?v=hangar-3';
+import { ENEMY_ROLES } from './enemy-behaviors.js';
+import {
+  cleanCareer,
+  awardCareerForWorld,
+  deploymentProgression,
+  cleanDeploymentProgression,
+  availablePoints,
+} from './career-progression.js';
+import { mutateCareerAtHub } from './career-hub.js';
+import { destructionMission, destructionMarkers } from './destruction-mission.js';
+import { createDestructionLab, destructionLabEnabled } from './destruction-lab.js';
+import { createSceneFlow } from './scene-flow.js';
+import { createDeploymentGate, MIN_LOADING_SECONDS, deploymentIntro } from './cinematic.js';
+import { campaignRound } from './mission-catalog.js';
+// Both endpoints require matching field, career, hub and deployment catalogs.
+import {
+  HUB_PROTOCOL,
+  HUB_CATALOG,
+  newHubSave,
+  cleanHubSave,
+  inheritArmory,
+  ownsLicense,
+  missingLicenses,
+  purchaseAtStation,
+  rewardHub,
+  syncHubPlayers,
+  setHubInput,
+  stepHub,
+  nearStation,
+  hubSnapshot,
+} from './hub-state.js';
+import { createHubView } from './hub-view.js';
+const ROOM_PROTOCOL = roomProtocol(destructionLabEnabled);
+import { chassisFor, chassisBlueprint } from './chassis.js';
+import { chassisPickerMarkup, chassisIcon } from './chassis-view.js';
+import { CONTRACTS, sortieReport } from './sortie-progression.js';
+import { createSortieHud, debriefMarkup } from './sortie-view.js?v=ui-stack-1';
+import { impactMode, toggleImpactMode, impactLevel } from './impact-preferences.js';
+import {
+  newCampaign,
+  cleanCampaign,
+  LANDINGS,
+  campaignMission,
+  recordSortie,
+  installRefit,
+  registerPilot,
+} from './campaign.js';
+import { createCampaignView, CAMPAIGN_MECHS } from './campaign-view.js';
+import { createCallsign, validCallsign } from './pilot.js';
+import { receiveLegacyMechs } from './migration.js';
 await receiveLegacyMechs();
-import{hullStatus}from './hud-status.js?v=41';
-import{operationMarkers}from './planet-mission.js?v=41';
-import{itemIcon,itemWeightClass}from'./workshop-icons.js?v=41';
-import{SOCKETS,socketOptions,fitComponent,gridState}from'./workshop-grid.js?v=41';
-import{taskStatus,objectiveStatus,ultimateStatus}from'./hud-status.js?v=41';
-import{drawNearbyMap}from'./nearby-map.js?v=41';
-import{squadStatus}from'./squad-status.js?v=41';
-import{buildKey,EQUIPMENT,RACK_SIZE,equipmentFor,activeItem,specialFor,COMBAT_MOVES,PARTS,PART_LABELS,partsFor,mechStats,validBuild,WEAPONS,RANGED,MELEE,ABILITIES,COLORS,TRAIL_COLORS,DEFAULT_BUILD,cost,cleanBuild,testPlatform,combatTrial,planetMission,newWorld,setInput,step,snapshot}from'./core.js?v=41';
-import{drawMap}from'./render.js?v=41';
-import{destructionGraphics,drawHomeBattle3D,rotatePreview,zoomPreview,resetPreviewOrbit,drawPreview3D,drawBattle3D,initBattle,prepareBattle,graphicsError,resetBattle,getAim,projectWorld}from'./three-view.js?v=impact-1';
-import{view,look,resetView,setStrafe,movementInput,mouseButtons}from'./view-controls.js?v=41';
-import{createMouseLook}from'./mouse-look.js';
-import{installPilotVoicePicker}from './pilot-voice-picker.js';
-import{initAudio,resetSound,updateSound,toggleSound,updateBoostSound,updateChargeSound,updatePreviewSound,togglePilotVoice,pilotVoiceEnabled,selectedPilotVoice,selectPilotVoice,previewPilotVoice,stopPilotVoice}from'./audio.js?v=pilot-2';
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const read=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f;}catch{return f;}},write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true;}catch{toast('Storage unavailable. Export your mech to keep a copy.');return false;}};
-const randomSeed=()=>crypto.getRandomValues(new Uint32Array(1))[0];let build=cleanBuild(read('iw-active',chassisBlueprint('vanguard'))),saved=read('iw-builds',[]);if(!Array.isArray(saved))saved=[];saved=saved.slice(0,12).map(cleanBuild);let pilot=read('iw-callsign',null),m=planetMission(randomSeed()),localId='local',peer=null,hostConn=null,isHost=false,room='',roster=[],connections=new Map(),world=null,playing=false,endShown=false,connecting=false,joinTimeout=null,lastSnapshot=0,receivedAt=0,netFrames=0,toastTimeout;
-let soloCampaign=cleanCampaign(read('iw-campaign',null)),campaign=soloCampaign,campaignMissionActive=false;
-if(!validCallsign(pilot)){pilot=createCallsign();write('iw-callsign',pilot);}
-let homePaused=false,homeTime=0,homeTick=0;let activeSlot="torso",equipmentFilter="all",thrusterPreview=false,equipmentPreview=false;
-const reportCapture=createFrameCapture();let feedback=null;
-let keys={},mouse={x:0,y:0,melee:false,fire:false,moved:false},touch={x:0,y:0,fire:false},pressAbility=false,pressMelee=false,pressDash=false;let handPress={left:false,right:false};const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const sortieHud=createSortieHud($('#game'));
-function toast(msg){$('#toast').textContent=msg;$('#toast').classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>$('#toast').classList.remove('show'),4200);}
-function modal(html){if(document.pointerLockElement)document.exitPointerLock();clearInputs();$('#modalBody').innerHTML=html;if(!$('#modal').open)$('#modal').showModal();}
-$('#closeModal').onclick=()=>{if(playing&&world?.status!=='playing'){if(isHost||!room)returnToHangar();else{$('#modal').close();resetNetwork();}}else $('#modal').close();};$('#modal').addEventListener('click',e=>{if(e.target===$('#modal')&&(!playing||world?.status==='playing'))$('#modal').close();});
-$('#modal').addEventListener('cancel',e=>{if(playing&&world?.status!=='playing')e.preventDefault();});
-function me(){return{id:localId,name:pilot,build:cleanBuild(build),ready:false};}
-function localPlayer(){return roster.find(p=>p.id===localId);}
-function safeSend(conn,data){if(conn?.open){try{if(conn.bufferSize<12)conn.send(data);}catch{}}}
-function broadcast(data){for(const conn of connections.values())safeSend(conn,data);}
-function broadcastLobby(){broadcast({type:'lobby',roster,mission:m,room,campaign});updateSquad();}
-function buildChanged(){build=cleanBuild(build);write('iw-active',build);if(room){if(isHost){const p=localPlayer();if(p){p.build=cleanBuild(build);p.ready=false;}broadcastLobby();}else{const p=localPlayer();if(p){p.build=cleanBuild(build);p.ready=false;}safeSend(hostConn,{type:'loadout',build,name:pilot});}}updateBuild();updateSquad();}
-const slotHints={};
-function fitInto(slot,payload){const next=fitComponent(build,slot,payload);if(!next)return;build=next;activeSlot=slot;buildChanged();document.querySelector(`[data-slot="${slot}"]`)?.focus({preventScroll:true});}
-function chooseChassis(size='all'){
- modal(chassisPickerMarkup(build,size));
- document.querySelectorAll('[data-chassis-class]').forEach(el=>el.onclick=()=>chooseChassis(el.dataset.chassisClass));
- document.querySelectorAll('[data-chassis-fit]').forEach(el=>el.onclick=()=>{build=cleanBuild({...build,chassis:el.dataset.chassisFit});$('#modal').close();buildChanged();});
- document.querySelectorAll('[data-chassis-factory]').forEach(el=>el.onclick=()=>{build=cleanBuild(chassisBlueprint(el.dataset.chassisFactory));$('#modal').close();buildChanged();});
+import { hullStatus } from './hud-status.js?v=ui-stack-1';
+import { operationMarkers } from './planet-mission.js?v=41';
+import { itemIcon } from './workshop-icons.js?v=41';
+import { SOCKETS, socketOptions, fitComponent, gridState } from './workshop-grid.js?v=41';
+import { taskStatus, objectiveStatus, ultimateStatus } from './hud-status.js?v=41';
+import { drawNearbyMap } from './nearby-map.js?v=41';
+import { squadStatus } from './squad-status.js?v=41';
+import {
+  buildKey,
+  EQUIPMENT,
+  RACK_SIZE,
+  equipmentFor,
+  activeItem,
+  specialFor,
+  COMBAT_MOVES,
+  PARTS,
+  PART_LABELS,
+  partsFor,
+  mechStats,
+  combatStats,
+  combatRecovery,
+  validBuild,
+  WEAPONS,
+  RANGED,
+  MELEE,
+  ABILITIES,
+  COLORS,
+  TRAIL_COLORS,
+  DEFAULT_BUILD,
+  cost,
+  cleanBuild,
+  testPlatform,
+  combatTrial,
+  planetMission,
+  newWorld,
+  setInput,
+  step,
+  snapshot,
+} from './core.js?v=41';
+import { drawMap } from './render.js?v=41';
+import {
+  destructionGraphics,
+  drawHomeBattle3D,
+  rotatePreview,
+  zoomPreview,
+  resetPreviewOrbit,
+  drawPreview3D,
+  drawBattle3D,
+  initBattle,
+  prepareBattle,
+  graphicsError,
+  resetBattle,
+  getAim,
+  projectWorld,
+} from './three-view.js?v=ui-stack-1';
+import {
+  view,
+  look,
+  resetView,
+  setStrafe,
+  movementInput,
+  mouseButtons,
+} from './view-controls.js?v=41';
+import { createMouseLook } from './mouse-look.js';
+import { installPilotVoicePicker } from './pilot-voice-picker.js';
+import {
+  playTransitionSound,
+  initAudio,
+  resetSound,
+  updateSound,
+  toggleSound,
+  updateBoostSound,
+  updateChargeSound,
+  updatePreviewSound,
+  togglePilotVoice,
+  pilotVoiceEnabled,
+  selectedPilotVoice,
+  selectPilotVoice,
+  previewPilotVoice,
+  stopPilotVoice,
+} from './audio.js?v=pilot-career-cinematic-3';
+const $ = (s) => document.querySelector(s),
+  $$ = (s) => [...document.querySelectorAll(s)],
+  escape = (s) =>
+    String(s).replace(
+      /[&<>"']/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+    );
+const read = (k, f) => {
+    try {
+      return JSON.parse(localStorage.getItem(k)) ?? f;
+    } catch {
+      return f;
+    }
+  },
+  write = (k, v) => {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+      return true;
+    } catch {
+      toast(
+        k === 'iw-career-v1'
+          ? 'Career progress could not be saved. Allow browser storage or free space, then try again.'
+          : 'Storage unavailable. Export your mech to keep a copy.',
+      );
+      return false;
+    }
+  };
+const randomSeed = () => crypto.getRandomValues(new Uint32Array(1))[0];
+let build = cleanBuild(read('iw-active', chassisBlueprint('vanguard'))),
+  saved = read('iw-builds', []);
+if (!Array.isArray(saved)) saved = [];
+saved = saved.slice(0, 12).map(cleanBuild);
+let pilot = read('iw-callsign', null),
+  m = planetMission(randomSeed()),
+  localId = 'local',
+  peer = null,
+  hostConn = null,
+  isHost = false,
+  room = '',
+  roster = [],
+  connections = new Map(),
+  world = null,
+  playing = false,
+  endShown = false,
+  connecting = false,
+  joinTimeout = null,
+  lastSnapshot = 0,
+  receivedAt = 0,
+  netFrames = 0,
+  toastTimeout;
+let soloCampaign = cleanCampaign(read('iw-campaign', null)),
+  campaign = soloCampaign,
+  campaignMissionActive = false;
+let career = cleanCareer(read('iw-career-v1', null));
+const storedArmory = read('iw-hub-armory', null);
+let soloArmory = storedArmory
+  ? cleanHubSave(storedArmory)
+  : inheritArmory({ ...newHubSave(), bestLevel: soloCampaign?.level || 0 }, [build, ...saved]);
+let armory = soloArmory,
+  hubState = syncHubPlayers(null, []),
+  lastHubSnapshot = 0,
+  lastHubInput = 0;
+if (!storedArmory) write('iw-hub-armory', soloArmory);
+if (!validCallsign(pilot)) {
+  pilot = createCallsign();
+  write('iw-callsign', pilot);
 }
-$('#chooseChassis').onclick=()=>chooseChassis();
-function updateBuild(){
- const f=gridState(build),valid=f.valid,isPart=!!PARTS[activeSlot],slot=Number(activeSlot.replace('equip',''))||0,current=isPart?build.parts[activeSlot]:build.equipment[slot],selectedSocket=SOCKETS.find(s=>s.id===activeSlot);
- $('#mechName').textContent=build.name;$('#previewName').textContent=build.name;$('#frameRole').textContent='';const chassis=chassisFor(build);$('#chooseChassis').textContent=chassis.name+(chassis.size?' · '+chassis.size.toUpperCase():'')+' ↗';$('#chassisSummary').textContent=`${chassis.role} · ${f.heavyUsed}/${f.heavySlots} heavy mounts · ${chassis.scale.toFixed(2)}× size`;$('#frameDescription').textContent=build.equipment.map(id=>EQUIPMENT[id].name.split(' / ').at(-1)).join(' · ');$('#modelCode').textContent=f.weightClass+' MECH';
- const socketHTML=s=>`<button class="grid-socket" aria-pressed="${s.id===activeSlot}" aria-label="${s.label}: ${s.item.name.split(' / ').at(-1)}, ${s.weight} tonnes" data-slot="${s.id}" style="--socket-color:${build.partColors[s.id]||'#a1d9c2'}"><span class="socket-label">${s.label}</span><span class="socket-icon">${itemIcon(s.id,s.selected,s.item)}</span><strong>${s.item.name.split(' / ').at(-1)}</strong><small>${s.weight}t${s.id==='booster'?' · '+f.capacity+'t effective payload':''}</small></button>`;
- $('#partTabs').innerHTML=f.sockets.slice(0,5).map(socketHTML).join('');$('#equipmentTabs').innerHTML=f.sockets.slice(5).map(socketHTML).join('');
- $$('[data-slot]').forEach(el=>el.onclick=()=>{activeSlot=el.dataset.slot;const hand=WEAPONS[build.equipment[Number(activeSlot.slice(5))]];equipmentFilter=hand?(hand.guard?'defensive':hand.melee?'melee':'ranged'):'all';updateBuild();document.querySelector(`[data-slot="${activeSlot}"]`)?.focus({preventScroll:true});});
- $('#previewPower').hidden=valid;$('#previewPowerDetail').textContent=f.issues.join(' ');document.body.classList.toggle('mech-offline',!valid);for(const id of['testWeapons','testThrusters'])$('#'+id).disabled=!valid;if(!valid){thrusterPreview=false;equipmentPreview=false;$('#testWeapons').textContent='Test equipment';$('#testThrusters').textContent='Test boosters';$('#testWeapons').setAttribute('aria-pressed','false');$('#testThrusters').setAttribute('aria-pressed','false');}
- $('#workshopStatus').textContent=valid?'READY TO TEST':'POWER OFFLINE';$('#assemblyStatus').textContent=valid?'● ONLINE':'○ REFIT REQUIRED';$('#assemblyStatus').classList.toggle('offline',!valid);$('#assemblyStats').innerHTML=`${f.weight}<span> / ${f.capacity}t</span>`;$('#assemblyPerformance').textContent=`${f.hp} armor · ${Math.round(f.speed*f.boost)} boost speed`;$('#assemblyLoad').style.width=Math.min(100,f.weight/f.capacity*100)+'%';
- const meter=$('#powerSegments');meter.setAttribute('aria-valuemin','0');meter.setAttribute('aria-valuemax',f.capacity);meter.setAttribute('aria-valuenow',Math.min(f.weight,f.capacity));meter.setAttribute('aria-valuetext',`${f.weight} of ${f.capacity} tonnes. ${valid?'Power online':'Overloaded'}`);meter.innerHTML=f.sockets.map(s=>`<i class="${s.id===activeSlot?'selected':''}" style="flex-basis:${s.weight/Math.max(f.weight,f.capacity)*100}%" title="${s.label}: ${s.weight}t"></i>`).join('');$('#powerRemaining').textContent=valid?(f.capacity-f.weight)+'t FREE CAPACITY':f.weight>f.capacity?(f.weight-f.capacity)+'t OVER CAPACITY':f.heavyUsed+'/'+f.heavySlots+' HEAVY MOUNTS';
- $('#selectionTitle').textContent=selectedSocket.label;$('#parts').classList.toggle('frame-choices',isPart);
- const filters=$('#equipmentFilters');filters.hidden=isPart||slot===2;filters.innerHTML=['all','ranged','melee','defensive'].map(type=>`<button data-filter="${type}" aria-pressed="${type===equipmentFilter}">${type[0].toUpperCase()+type.slice(1)}</button>`).join('');$$('[data-filter]').forEach(el=>el.onclick=()=>{equipmentFilter=el.dataset.filter;updateBuild();});
- const options=Object.entries(socketOptions(activeSlot)).filter(([id,v])=>isPart||slot===2||equipmentFilter==='all'||(equipmentFilter==='defensive'?v.guard:equipmentFilter==='melee'?v.melee&&!v.guard:!v.melee));
- const maxWeight=Math.max(...Object.values(socketOptions(activeSlot)).map(v=>v.weight));
- $('#parts').innerHTML=options.map(([id,v])=>{const chosen=id===current,tier=itemWeightClass(activeSlot,id,v);return `<button class="part-choice ${chosen?'selected':''}" data-choice="${id}" aria-pressed="${chosen}" aria-label="${escape(v.name.split(' / ').at(-1))}, ${tier}, ${v.weight} tonnes${chosen?', fitted':''}"><span class="choice-heading"><span class="option-icon" style="--socket-color:${build.partColors[activeSlot]||'#a1d9c2'}">${itemIcon(activeSlot,id,v)}</span><span class="choice-name"><span class="weight-class ${tier}">${tier.toUpperCase()}</span><strong>${v.name.split(' / ').at(-1)}</strong></span></span><span class="component-weight"><b>${v.weight}<small>t</small></b><span>WEIGHT</span></span><span class="weight-comparison" aria-hidden="true"><i style="width:${v.weight/maxWeight*100}%"></i></span>${isPart&&v.appearance?`<small class="equipment-description">${v.appearance}</small>`:''}${!isPart&&slot!==2&&HEAVY_EQUIPMENT.includes(id)?'<small class="equipment-description">Requires 1 heavy-rated hand mount</small>':''}<span class="choice-detail">${isPart?(activeSlot==='booster'?Math.min(chassis.payload,Math.round(v.capacity*chassis.output))+'t effective payload':v.hp+' armor'):(v.role||'TEAM SPECIAL')}</span>${isPart?'':`<small class="equipment-description">${v.desc}</small>`}</button>`;}).join('');
- $$('[data-choice]').forEach(el=>el.onclick=()=>{fitInto(activeSlot,{kind:selectedSocket.kind,id:el.dataset.choice});document.querySelector(`[data-choice="${el.dataset.choice}"]`)?.focus({preventScroll:true});});
- $('#paintRow').hidden=!isPart;$('#paintLabel').textContent=(PART_LABELS[activeSlot]||'Part')+' paint';$('#colors').innerHTML=COLORS.map(([c,n])=>`<button class="swatch ${build.partColors[activeSlot]===c?'selected':''}" style="--swatch:${c}" data-color="${c}" aria-label="${n}" title="${n}" aria-pressed="${build.partColors[activeSlot]===c}"></button>`).join('');$$('[data-color]').forEach(el=>el.onclick=()=>{if(isPart){build.partColors[activeSlot]=el.dataset.color;buildChanged();}});
- $('#trailRow').hidden=activeSlot!=='booster';$('#trailColors').innerHTML=TRAIL_COLORS.map(([c,n])=>`<button class="swatch ${build.trailColor===c?'selected':''}" style="--swatch:${c}" data-trail="${c}" aria-label="${n} exhaust" aria-pressed="${build.trailColor===c}"></button>`).join('');$$('[data-trail]').forEach(el=>el.onclick=()=>{build.trailColor=el.dataset.trail;thrusterPreview=true;$('#testThrusters').textContent='Stop boosters';$('#testThrusters').setAttribute('aria-pressed','true');buildChanged();});
- $('#weightBudget').textContent=f.weight+' / '+f.capacity+' t';$('#weightBar').style.width=Math.min(100,f.weight/f.capacity*100)+'%';$('#weaponDesc').textContent=`Frame ${f.frameWeight}t + equipment ${f.equipmentWeight}t.`;$('#abilityDesc').textContent='';$('#buildHint').textContent=f.issues.join(' ');$('#buildHint').classList.toggle('error',!valid);for(const id of['saveMech','testBuildTop','startTrial','startMission'])$('#'+id).disabled=!valid;
- $('#armorStat').textContent=f.hp;$('#speedStat').textContent=f.speed;$('#damageStat').textContent=build.equipment.filter(id=>WEAPONS[id]).length;$('#armorBar').style.width=Math.min(100,f.hp/600*100)+'%';$('#speedBar').style.width=Math.min(100,f.speed/450*100)+'%';$('#damageBar').style.width='0%';$('#engineering').textContent=`Unlimited thrust · ${f.lift} lift/sec · ${Math.round(f.speed*f.boost)} boost speed`;
- renderCampaign();
+let homePaused = false,
+  homeTime = 0,
+  homeTick = 0;
+let activeSlot = 'torso',
+  equipmentFilter = 'all',
+  thrusterPreview = false,
+  equipmentPreview = false;
+const reportCapture = createFrameCapture();
+let feedback = null;
+let keys = {},
+  mouse = { x: 0, y: 0, melee: false, fire: false, moved: false },
+  touch = { x: 0, y: 0, fire: false },
+  pressAbility = false,
+  pressMelee = false,
+  pressDash = false;
+let handPress = { left: false, right: false };
+const reduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const sortieHud = createSortieHud($('#game'));
+const sceneFlow = createSceneFlow($('#sceneFlow'));
+let deployment = null;
+function toast(msg) {
+  $('#toast').textContent = msg;
+  $('#toast').classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => $('#toast').classList.remove('show'), 4200);
 }
-
-function menuScreen(screen){document.body.dataset.screen=screen;renderCampaign();$('#mechPreview').setAttribute('aria-label',screen==='garage'?'Mech viewer. Drag to rotate, scroll to zoom, or use arrow keys.':'Animated battle between three mechs');window.scrollTo(0,0);thrusterPreview=false;equipmentPreview=false;$('#testWeapons').textContent='Test equipment';$('#testWeapons').setAttribute('aria-pressed','false');$('#testThrusters').textContent='Test boosters';$('#testThrusters').setAttribute('aria-pressed','false');}
-$('#homeNav').onclick=()=>menuScreen('home');$('#garageNav').onclick=$('#startGarage').onclick=()=>menuScreen('garage');$('#garageBack').onclick=()=>menuScreen(campaign?'campaign':'home');
-$('#campaignNav').onclick=$('#continueCampaign').onclick=()=>openCampaign();
-const campaignView=createCampaignView($('#campaignScreen'),{
- newRun:()=>$('#startMission').click(),refit:request=>{if(room&&!isHost)safeSend(hostConn,{type:'refit',request});else applyRefit(localPlayer()?.name||pilot,request);},drill:id=>startDrill(id),legacy:()=>startDrill('cinderfall'),
- home:()=>menuScreen('home'),workshop:()=>menuScreen('garage'),host:()=>{openCampaign();hostRoom();},join:()=>showJoin(),
- invite:()=>copyRoom(),leave:()=>resetNetwork('Left the squad.'),ready:()=>toggleReady(),
- contract:id=>{if(room&&!isHost)return;if(!CONTRACTS.some(c=>c.id===id)||campaign.contract===id)return;campaign={...campaign,contract:id,revision:campaign.revision+1};persistCampaign();m=campaignMission(campaign,planetMission);roster.forEach(p=>p.ready=false);if(room)broadcastLobby();updateMission();updateSquad();},
- landing:id=>{if(room&&!isHost)return;if(!LANDINGS.some(p=>p.id===id)||campaign.landing===id)return;campaign={...campaign,landing:id,revision:campaign.revision+1};persistCampaign();m=campaignMission(campaign,planetMission);roster.forEach(p=>p.ready=false);campaignView.focusLanding(campaign);if(room)broadcastLobby();updateMission();updateSquad();},
- mech:value=>{const [kind,index]=value.split('-'),chosen=kind==='preset'?CAMPAIGN_MECHS[Number(index)]?.build:kind==='saved'?saved[Number(index)]:null;if(!chosen)return;build=cleanBuild({...chosen,equipment:[...chosen.equipment.slice(0,2),build.equipment[2]]});buildChanged();},
- special:id=>{if(!Object.hasOwn(ABILITIES,id))return;build=cleanBuild({...build,equipment:[...build.equipment.slice(0,2),id]});buildChanged();},
- deploy:()=>{if(room&&(!isHost||!roster.every(p=>p.ready&&validBuild(p.build))))return;if(!campaign||campaign.runState!=='active'||!validBuild(build)||connecting)return;if(m.mode!=='operation'||m.campaign?.id!==campaign.id)m=campaignMission(campaign,planetMission);$('#deploy').click();}
+function modal(html) {
+  if (document.pointerLockElement) document.exitPointerLock();
+  clearInputs();
+  $('#modalBody').innerHTML = html;
+  prepareDialog($('#modalBody'));
+  if (!$('#modal').open) $('#modal').showModal();
+}
+$('#closeModal').onclick = () => {
+  if (playing && world?.status !== 'playing') {
+    if (isHost || !room) returnToHangar();
+    else {
+      $('#modal').close();
+      resetNetwork();
+    }
+  } else $('#modal').close();
+};
+$('#modal').addEventListener('click', (e) => {
+  if (e.target === $('#modal') && (!playing || world?.status === 'playing')) $('#modal').close();
 });
-function registerRunPilot(name){if(!campaign)return;const next=registerPilot(campaign,name,roster.map(p=>p.name));if(next===campaign)return;campaign=next;persistCampaign();if(!m.practice&&!m.destructible)m=campaignMission(campaign);roster.forEach(p=>p.ready=false);}
-function applyRefit(name,request){if(playing||!campaign||room&&!isHost)return;const next=installRefit(campaign,name,request);if(next===campaign)return;campaign=next;persistCampaign();m=campaignMission(campaign);roster.forEach(p=>p.ready=false);if(room)broadcastLobby();updateSquad();}
-function startDrill(id){if(room&&!isHost)return;m=id==='cinderfall'?planetMission(randomSeed()):campaignRound(id,randomSeed());m.practice=true;m.contract=campaign?.contract||'frontline';roster.forEach(p=>p.ready=false);if(room){broadcastLobby();menuScreen('home');toast('Mission drill selected. Ready up in the squad lobby.');}else $('#deploy').click();}
-function persistCampaign(){if(room&&!isHost)return;soloCampaign=campaign;write('iw-campaign',campaign);}
-function renderCampaign(){
- $('#continueCampaign').hidden=!campaign;$('#continueCampaign').textContent=room?'Return to squad campaign ↗':'Continue campaign ↗';
- $('#startMission').classList.toggle('primary',!campaign);$('#startMission').classList.toggle('secondary',!!campaign);$('#startMission').disabled=!!room&&!isHost;
- if(document.body.dataset.screen==='campaign')campaignView.render({campaign,build,saved,members:room?roster:[me()],localId,room,isHost,connecting,canChoose:!room||isHost});
-}
-function openCampaign(){
- if(!campaign){if(room&&!isHost){toast('Waiting for the host to create a campaign.');return;}campaign=newCampaign(randomSeed());persistCampaign();}
- if(!room||isHost){if(m.mode!=='operation'||m.campaign?.id!==campaign.id){m=campaignMission(campaign,planetMission);roster.forEach(p=>p.ready=false);if(room)broadcastLobby();}}
- campaignView.focusLanding(campaign);menuScreen('campaign');updateMission();updateSquad();
-}
-function beginCampaign(){
- if(room&&!isHost)return;const records=campaign?.records||{};campaign={...newCampaign(randomSeed()),records};persistCampaign();m=campaignMission(campaign,planetMission);roster.forEach(p=>p.ready=false);if(room)broadcastLobby();openCampaign();
-}
-function toggleReady(){
- if(!room||playing||connecting)return;const p=localPlayer();if(!p||(!p.ready&&!validBuild(build)))return;
- if(isHost){p.ready=!p.ready;broadcastLobby();}else safeSend(hostConn,{type:'ready',ready:!p.ready,campaignId:campaign?.id,revision:campaign?.revision});
-}
-function settleCampaign(outcome){
- if(!campaignMissionActive||!campaign||world?.mission.campaign?.id!==campaign.id||(room&&!isHost))return;
- campaignMissionActive=false;campaign=recordSortie(campaign,outcome,sortieReport(world,outcome));persistCampaign();m=campaignMission(campaign,planetMission);
-}
-function selectMode(mode,variant='level'){if(room&&!isHost)return;m=mode==='destruction'?destructionMission(variant):mode==='operation'&&campaign?campaignMission(campaign,planetMission):mode==='operation'?planetMission(randomSeed()):mode==='trial'?combatTrial():testPlatform();if(room){roster.forEach(p=>p.ready=false);broadcastLobby();}updateMission();updateSquad();}
-$('#startMission').onclick=()=>{if(!campaign){beginCampaign();return;}modal('<p class="overline">NEW CAMPAIGN</p><h2>Start a new front?</h2><p>This resets the campaign saved in this browser. Your mechs stay in the armory.'+(room?' Your squad will share the new board and ready up again.':'')+'</p><div class="dialog-actions"><button class="button primary" id="confirmCampaign">NEW CAMPAIGN</button><button class="button secondary" id="keepCampaign">CONTINUE CURRENT</button></div>');$('#confirmCampaign').onclick=()=>{$('#modal').close();beginCampaign();};$('#keepCampaign').onclick=()=>{$('#modal').close();openCampaign();};};
-function practice(mode){if(room&&!isHost){menuScreen('campaign');toast('The host chooses the practice mode. Mark ready when your squad is set.');return;}selectMode(mode);if(room){menuScreen('home');toast('Practice selected. Mark ready in the squad lobby.');return;}$('#deploy').click();}
-$('#trialMode').onchange=()=>selectMode($('#trialMode').value);$('#startTrial').onclick=()=>practice('trial');$('#testBuildTop').onclick=()=>practice('sandbox');$('#startHost').onclick=()=>{if(!destructionLabEnabled)openCampaign();hostRoom();};$('#startJoin').onclick=()=>showJoin();$('#testThrusters').onclick=()=>{initAudio();thrusterPreview=!thrusterPreview;$('#testThrusters').textContent=thrusterPreview?'Stop boosters':'Test boosters';$('#testThrusters').setAttribute('aria-pressed',String(thrusterPreview));};
-$('#weapon').innerHTML=Object.entries(RANGED).map(([id,v])=>`<option value="${id}">${v.name}</option>`).join('');$('#ability').innerHTML=Object.entries(ABILITIES).map(([id,v])=>`<option value="${id}">${v.name.toUpperCase()}</option>`).join('');
-function updateMission(){ $('#trialMode').value=m.destructible?'destruction':m.mode==='operation'?'operation':m.mode==='trial'?'trial':'sandbox';$('#trialMode').disabled=!!room&&!isHost;$('#missionTitle').textContent=m.name;$('#missionNumber').textContent='';$('#sectorLabel').textContent=m.destructible?'EXPERIMENTAL 02 · DESTRUCTION':m.mode==='operation'?`LEVEL ${m.sector} / ${m.estimatedMinutes||15} MIN${m.practice?' / DRILL':''}`:'MECH WORKSHOP';$('#reroll').hidden=true;}
-function updateSquad(){const members=room?roster:[me()];$('#squadCount').textContent=`0${members.length} / 04`;$('#squadSlots').innerHTML=Array.from({length:4},(_,i)=>{const p=members[i];return p?`<div class="squad-slot filled"><span class="slot-icon" style="color:${escape(p.build.color)}">◈</span><span>${escape(p.name)}${p.id===localId?' / YOU':''}</span><em>${room?(p.ready?'READY':'IN HANGAR'):'AWAITING DEPLOYMENT'}</em></div>`:`<button class="squad-slot" data-invite="1" aria-label="Invite a pilot"><span class="slot-icon">＋</span><span>OPEN SLOT</span></button>`;}).join('');$$('[data-invite]').forEach(b=>b.onclick=()=>room?copyRoom():showHostInfo());$('#connectActions').hidden=!!room;$('#roomActions').hidden=!room;$('#host').disabled=connecting;$('#join').disabled=connecting;$('#networkStatus').textContent=connecting?'Establishing squad connection…':room?`ROOM ${room} · ${isHost?'You are host':'Connected to host'} · ${members.filter(p=>p.ready).length}/${members.length} ready`:'Ready for a solo sortie or online co-op.';const p=localPlayer(),everyone=members.every(p=>p.ready);$('#deploy').innerHTML=!room?(m.destructible?'DEPLOY '+escape(m.name)+' <span>↗</span>':m.mode==='operation'?'DEPLOY CINDERFALL <span>↗</span>':m.mode==='trial'?'START AI DUEL <span>↗</span>':'ENTER TARGET RANGE <span>↗</span>'):isHost?(everyone?(m.mode==='operation'?'DEPLOY SQUAD <span>↗</span>':m.mode==='trial'?'START COMBAT TRIAL <span>↗</span>':'ENTER PLATFORM <span>↗</span>'):p?.ready?'WAITING FOR SQUAD':'MARK READY <span>✓</span>'):p?.ready?'UNREADY':'MARK READY <span>✓</span>';$('#deploy').disabled=connecting||!validBuild(build)||(!!room&&isHost&&p?.ready&&!everyone);$('#pilotLabel').textContent=room&&p?p.name:pilot;document.body.dataset.room=room?'true':'false';renderCampaign();}
-function showHostInfo(){modal('<p class="eyebrow orange">UP TO FOUR PILOTS</p><h2>ASSEMBLE YOUR SQUAD</h2><p>Create a room, share its invite, and choose your mechs. Everyone marks ready before the host deploys. No account needed.</p><p>Keep the host’s tab open during the mission. Direct browser connections may be blocked by restrictive networks; try a different network if a connection fails.</p><button class="button primary" id="confirmHost">CREATE ONLINE ROOM ↗</button>');$('#confirmHost').onclick=()=>{$('#modal').close();hostRoom();};}
-function createPeer(id){return new Peer(id,{debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}});}
-function resetNetwork(message){resetSound();$('#modal').close();if(document.pointerLockElement)document.exitPointerLock();clearTimeout(joinTimeout);const old=peer;peer=null;hostConn=null;connections.clear();room='';isHost=false;connecting=false;localId='local';roster=[];old?.destroy();campaignMissionActive=false;campaign=soloCampaign;if(campaign)m=campaignMission(campaign,planetMission);if(playing){playing=false;world=null;$('#game').hidden=true;$('#hangar').hidden=false;}if(document.body.dataset.screen==='campaign'&&!campaign)menuScreen('home');updateSquad();updateMission();if(message)toast(message);}
-function networkError(error){if(!peer)return;if(error.type==='peer-unavailable')resetNetwork('Room not found. Check the code and that the host is online.');else if(connecting)resetNetwork('Could not connect. Check your network and try again.');else if(error.type==='unavailable-id')resetNetwork('Room code in use. Please create a new room.');else toast('Connection warning. If your squad disconnects, create a new room.');}
-async function hostRoom(){if(connecting||room)return;if(!campaign&&!destructionLabEnabled)openCampaign();if(!window.Peer){toast('Online library did not load. Reload the page to try again.');return;}connecting=true;updateSquad();const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=crypto.getRandomValues(new Uint8Array(6)),code=[...bytes].map(b=>chars[b%chars.length]).join('');try{peer=createPeer(ROOM_PROTOCOL+code);}catch{resetNetwork('This browser cannot establish an online connection.');return;}const p=peer;p.on('error',networkError);joinTimeout=setTimeout(()=>{if(connecting)resetNetwork('Signaling server unavailable. Try again or deploy solo.');},15000);p.on('open',id=>{if(peer!==p)return;clearTimeout(joinTimeout);if(room&&isHost){connecting=false;updateSquad();return;}isHost=true;room=code;localId=id;connecting=false;roster=[me()];registerRunPilot(pilot);menuScreen(m.destructible?'home':'campaign');updateSquad();updateMission();toast('Room '+room+' ready. Copy an invite for your squad.');});p.on('disconnected',()=>{if(peer===p&&!p.destroyed){toast('Room discovery interrupted. Reconnecting…');p.reconnect();}});p.on('connection',conn=>{let accepted=false,verifying=false,rate=0,rateAt=Date.now();conn.on('open',()=>{if(playing||roster.length>=4){safeSend(conn,{type:'reject',reason:playing?'Mission in progress. Join after the squad returns.':'This squad is full (4 pilots).'});setTimeout(()=>conn.close(),500);return;}const timeout=setTimeout(()=>{if(!accepted)conn.close();},8000);conn.on('data',async data=>{if(!data||typeof data!=='object')return;if(Date.now()-rateAt>1000){rate=0;rateAt=Date.now();}if(++rate>100)return;if(data.type==='hello'&&!accepted&&!verifying){verifying=true;const assigned={callsign:validCallsign(data.callsign)?data.callsign:createCallsign()};if(roster.some(member=>member.name===assigned.callsign))assigned.callsign=createCallsign();if(peer!==p||!conn.open)return;if(playing||roster.length>=4){safeSend(conn,{type:'reject',reason:'The squad is full or is already testing.'});setTimeout(()=>conn.close(),500);return;}accepted=true;clearTimeout(timeout);connections.set(conn.peer,conn);roster.push({id:conn.peer,name:assigned.callsign,build:cleanBuild(data.build),ready:false});registerRunPilot(assigned.callsign);broadcastLobby();toast('A pilot joined your squad.');return;}if(!accepted)return;const member=roster.find(x=>x.id===conn.peer);if(!member)return;if(data.type==='input'&&playing){setInput(world,conn.peer,data.input);}else if(data.type==='ready'&&!playing){member.ready=!!data.ready&&(!m.campaign||data.campaignId===campaign?.id&&data.revision===campaign?.revision)&&validBuild(member.build);broadcastLobby();}else if(data.type==='refit'&&!playing){applyRefit(member.name,data.request);}else if(data.type==='loadout'&&!playing){member.build=cleanBuild(data.build);member.ready=false;broadcastLobby();}});});const gone=()=>{if(!accepted||peer!==p)return;accepted=false;connections.delete(conn.peer);roster=roster.filter(x=>x.id!==conn.peer);if(world)world.players=world.players.filter(x=>x.id!==conn.peer);broadcastLobby();toast('A pilot disconnected.');};conn.on('close',gone);conn.on('error',gone);});}
-async function joinRoom(code){code=code.trim().toUpperCase();if(!/^[A-Z2-9]{6}$/.test(code)){toast('Enter the six-character room code.');return;}if(connecting||room)return;if(!window.Peer){toast('Online library did not load. Reload the page.');return;}connecting=true;updateSquad();try{peer=createPeer();}catch{resetNetwork('This browser does not support online connections.');return;}const p=peer;p.on('error',networkError);joinTimeout=setTimeout(()=>{if(connecting)resetNetwork('Connection timed out. Check the room code or try another network.');},18000);p.on('open',id=>{if(peer!==p)return;localId=id;hostConn=p.connect(ROOM_PROTOCOL+code,{reliable:true,serialization:'binary'});const conn=hostConn;conn.on('open',()=>safeSend(conn,{type:'hello',callsign:pilot,build:cleanBuild(build)}));conn.on('data',data=>{if(peer!==p||!data||typeof data!=='object')return;if(data.type==='reject'){resetNetwork(data.reason);return;}if(data.type==='lobby'){clearTimeout(joinTimeout);const firstJoin=!room,previousMode=m.mode,previousPractice=!!m.practice;room=code;connecting=false;roster=data.roster;m=data.mission;campaign=cleanCampaign(data.campaign);if(!playing&&(firstJoin||previousMode!==m.mode||previousPractice!==!!m.practice)){campaignView.focusLanding(campaign);menuScreen(m.mode==='operation'&&!m.practice?'campaign':'home');}receivedAt=performance.now();updateSquad();updateMission();if(($('#modal').open||feedback?.isOpen())&&$('#joinCode'))$('#modal').close();}if(data.type==='start'){world=data.world;m=world.mission;receivedAt=performance.now();startView();}if(data.type==='state'&&playing){world={...data.world,mission:world.mission};receivedAt=performance.now();if(world.status!=='playing')finish();}if(data.type==='return'){returnToHangar(false);m=data.mission;roster=data.roster;campaign=cleanCampaign(data.campaign);campaignView.focusLanding(campaign);menuScreen(m.destructible?'home':campaign?'campaign':'home');updateSquad();updateMission();toast('Squad returned to campaign command.');}});conn.on('close',()=>{if(peer===p)resetNetwork('Host disconnected. Your saved mechs are safe; create or join another room.');});conn.on('error',()=>{if(peer===p)resetNetwork('Squad connection lost. Try another network or room.');});});}
-function showJoin(code=''){modal(`<p class="eyebrow orange">LINK UP</p><h2>JOIN YOUR SQUAD</h2><p>Enter your host’s six-character room code. Join the host’s campaign board, choose your mech and special, then mark ready. Everyone deploys to the same battlefield.</p><label class="small-label" for="joinCode">ROOM CODE</label><input class="join-code" id="joinCode" maxlength="6" autocomplete="off" spellcheck="false" value="${escape(code)}" placeholder="ABC234"><button class="button primary full" id="confirmJoin">CONNECT TO SQUAD ↗</button>`);$('#joinCode').focus();$('#confirmJoin').onclick=()=>{joinRoom($('#joinCode').value);};$('#joinCode').onkeydown=e=>{if(e.key==='Enter')$('#confirmJoin').click();};}
-async function copyRoom(){if(!room)return;const link=new URL(location.href);link.search='';link.searchParams.set('room',room);if(destructionLabEnabled)link.searchParams.set('lab','destruction');link.hash='';try{await navigator.clipboard.writeText(link.href);toast('Invite copied. Room code: '+room);}catch{modal(`<h2>INVITE YOUR SQUAD</h2><p>Room code: <strong>${room}</strong></p><input aria-label="Room invite URL" value="${escape(link.href)}" readonly id="inviteUrl"><p>Select and copy this invite link.</p>`);$('#inviteUrl').select();}}
-$('#host').onclick=hostRoom;$('#join').onclick=()=>showJoin();$('#copyRoom').onclick=copyRoom;$('#leave').onclick=()=>resetNetwork('Left the squad.');$('#reroll').onclick=()=>{if(room&&!isHost)return;m=testPlatform();if(room){roster.forEach(p=>p.ready=false);broadcastLobby();}updateMission();toast('New operation generated: '+m.name);};
-$('#deploy').onclick=async()=>{if(m.campaign&&campaign?.runState!=='active')return;if(connecting||!validBuild(build)||(room&&isHost&&!roster.length))return;if(!initBattle($('#battle'))){toast(graphicsError());return;}initAudio();if(!room){localId='local';if(campaign&&m.mode==='operation'&&!m.practice)m=campaignMission(campaign,planetMission);world=newWorld(m,[me()]);startView();return;}const p=localPlayer();if(!p)return;if(isHost){if(roster.every(p=>p.ready&&validBuild(p.build))){if(campaign&&m.mode==='operation'&&!m.practice)m=campaignMission(campaign,planetMission);world=newWorld(m,roster);broadcast({type:'start',world:snapshot(world)});startView();}else{p.ready=true;broadcastLobby();}}else safeSend(hostConn,{type:'ready',ready:!p.ready,campaignId:campaign?.id,revision:campaign?.revision});};
-async function startView(){const deploying=world;campaignMissionActive=!!world.mission.campaign;if(!initBattle($('#battle'))){toast(graphicsError());return;}resetView();clearInputs();view.yaw=world.mission.heading;resetBattle();resetSound();playing=false;endShown=false;keys={};mouse.left=false;mouse.right=false;pressAbility=false;pressMelee=false;pressDash=false;$('#modal').close();$('#hangar').hidden=true;$('#game').hidden=false;thrusterPreview=false;$('#battle').focus();$('#gameOperation').textContent=m.name;$('#exitGame').textContent=world.siege?'HANGAR':world.mission.campaign||world.mission.raid?'CAMPAIGN':'WORKSHOP';$('#game').classList.toggle('sandbox',['sandbox','trial'].includes(world.mission.mode));$('#levelMapPanel').hidden=true;$('#deploymentScreen').hidden=false;await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));if(world!==deploying){$('#deploymentScreen').hidden=true;return;}prepareBattle($('#battle'),world,localId);$('#deploymentScreen').hidden=true;lastTick=performance.now();playing=true;lastSnapshot=0;if(matchMedia('(pointer:fine)').matches)mouseLook.capture();}
-function returnToHangar(send=true){resetSound();const destructionExit=!!world?.siege;if(document.pointerLockElement)document.exitPointerLock();if(campaignMissionActive)settleCampaign(world?.status==='won'?'victory':world?.status==='lost'?'defeat':'withdrawal');campaignMissionActive=false;playing=false;world=null;clearInputs();$('#game').hidden=true;$('#hangar').hidden=false;menuScreen(destructionExit?'home':campaign?'campaign':room?'home':'garage');$('#modal').close();if(isHost||!room){roster.forEach(p=>p.ready=false);}if(isHost&&send)broadcast({type:'return',mission:m,roster,campaign});updateMission();updateSquad();}
-function finish(){if(endShown||!world)return;endShown=true;const won=world.status==='won';settleCampaign(won?'victory':'defeat');if(world.mission.mode==='trial'){modal(`<p class="eyebrow orange">COMBAT TRIAL</p><h2>${won?'HOSTILE NEUTRALIZED.':'MECH DISABLED.'}</h2><p>${won?'The AI mech is down. Try another loadout or run the trial again.':'Boost through its firing line, close in between bursts, or equip a shield or repair system.'}</p><div class="end-stats"><div><b>${world.kills} / 1</b><span>HOSTILE DEFEATED</span></div><div><b>${Math.floor(world.time)}s</b><span>COMBAT TIME</span></div></div>${isHost||!room?'<div class="dialog-actions"><button class="button primary" id="retryTrial">FIGHT AGAIN</button><button class="button secondary" id="trialWorkshop">WORKSHOP</button></div>':'<p>Waiting for the host to restart or return.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'}`);if($('#retryTrial'))$('#retryTrial').onclick=()=>{world=newWorld(m,room?roster:[me()]);if(isHost)broadcast({type:'start',world:snapshot(world)});startView();};if($('#trialWorkshop'))$('#trialWorkshop').onclick=()=>{returnToHangar();menuScreen('garage');};if($('#leaveResult'))$('#leaveResult').onclick=()=>resetNetwork();return;}if(world.sortie){modal(debriefMarkup(sortieReport(world,won?'victory':'defeat'))+(isHost||!room?'<button class="button primary" id="returnHangar">RETURN TO CAMPAIGN ↗</button>':'<p>Waiting for the host to return the squad.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'));if($('#returnHangar'))$('#returnHangar').onclick=()=>returnToHangar();if($('#leaveResult'))$('#leaveResult').onclick=()=>resetNetwork();return;}modal(`<p class="eyebrow orange">OPERATION ${escape(world.mission.name)}</p><h2>${won?'EXTRACTION COMPLETE.':'SQUAD LOST. REGROUP.'}</h2><p>${won?(world.siege?'Breakwater breached. Refinery ruptured. Command collapsed. Squad extracted.':'Reactor destroyed. Squad extracted. Cinderfall is complete.'):'Your loadouts are safe. Try cover, a repair system, or a different squad composition.'}</p><div class="end-stats"><div><b>${world.kills}</b><span>HOSTILES CLEARED</span></div><div><b>${world.cleared}/${world.mission.zones.length}</b><span>OBJECTIVES COMPLETE</span></div><div><b>${Math.floor(world.time/60)}:${String(Math.floor(world.time%60)).padStart(2,'0')}</b><span>MISSION TIME</span></div></div>${isHost||!room?'<button class="button primary" id="returnHangar">RETURN TO CAMPAIGN ↗</button>':'<p>Waiting for the host to return the squad to campaign command.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'}`);if($('#returnHangar'))$('#returnHangar').onclick=()=>returnToHangar();if($('#leaveResult'))$('#leaveResult').onclick=()=>{$('#modal').close();resetNetwork();};}
-$('#exitGame').onclick=()=>{if(world?.mission.mode==='sandbox'&&!room){returnToHangar();menuScreen('garage');return;}const destination=world?.siege?'HANGAR':'CAMPAIGN',place=world?.siege?'the lab lobby':'campaign command';modal(`<h2>RETURN TO ${destination}?</h2><p>${isHost?'The whole squad will return to '+place+'.':room?'You will leave the squad. The other pilots can continue.':world?.siege?'Return to the lab lobby. Your campaign progress is unchanged.':'Withdraw to the campaign board. Your mechs and campaign progress are saved.'}</p><div class="dialog-actions"><button id="confirmExit" class="button primary">RETURN TO ${destination}</button><button id="stay" class="button secondary">KEEP PLAYING</button></div>`);$('#stay').onclick=()=>$('#modal').close();$('#confirmExit').onclick=()=>{if(room&&!isHost){$('#modal').close();resetNetwork();}else{returnToHangar();}};};
-$('#saveMech').onclick=()=>{if(!validBuild(build))return;const index=saved.findIndex(b=>buildKey(b)===buildKey(build));if(index>=0)saved[index]=cleanBuild(build);else if(saved.length<12)saved.push(cleanBuild(build));else{toast('12 save slots used. Delete a mech in Saved Mechs first.');return;}if(write('iw-builds',saved))toast(build.name+' saved to this browser.');};
-function downloadBuilds(){const blob=new Blob([JSON.stringify({game:'IRONWAKE',version:6,mechs:saved.length?saved:[cleanBuild(build)]},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ironwake-mechs.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function showBuilds(){modal(`<p class="eyebrow orange">YOUR PERSONAL ARMORY</p><h2>SAVED MECHS <span class="muted">${saved.length}/12</span></h2><p>Saved on this browser. Export a backup to take your mechs to another device. Loading a build resets your ready status.</p>${saved.length?saved.map((b,i)=>`<div class="build-card"><div><h3 style="color:${b.color}">${escape(b.name)}</h3><p>${mechStats(b).weightClass} / ${mechStats(b).weight}t / ${b.equipment.filter(Boolean).map(id=>EQUIPMENT[id].name.split(' / ').at(-1)).join(' + ')}</p></div><div><button class="button secondary" data-load="${i}">LOAD</button><button class="text-button" data-delete="${i}" aria-label="Delete ${escape(b.name)}"> × </button></div></div>`).join(''):'<p>No saved mechs yet. Configure your mech in the workshop, then choose Save Mech.</p>'}<div class="dialog-actions"><button id="exportBuilds" class="button secondary">EXPORT MECHS ↓</button><button id="importBuilds" class="button secondary">IMPORT MECHS ↑</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>`);$$('[data-load]').forEach(b=>b.onclick=()=>{build=cleanBuild(saved[+b.dataset.load]);$('#mechName').textContent=build.name;buildChanged();$('#modal').close();toast('Loaded '+build.name);});$$('[data-delete]').forEach(b=>b.onclick=()=>{saved.splice(+b.dataset.delete,1);write('iw-builds',saved);showBuilds();});$('#exportBuilds').onclick=downloadBuilds;$('#importBuilds').onclick=()=>$('#importFile').click();$('#importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>100000){toast('File too large. Import an Ironwake mech backup.');return;}try{const data=JSON.parse(await file.text());if(data.game!=='IRONWAKE'||!Array.isArray(data.mechs)||!data.mechs.every(b=>b&&typeof b==='object'))throw Error();const incoming=data.mechs.slice(0,12-saved.length).map(cleanBuild);saved.push(...incoming);write('iw-builds',saved);showBuilds();toast(incoming.length+' mechs imported.');}catch{toast('Invalid file. Choose an exported Ironwake mech backup.');}};}
-function showManual(){modal(`<p class="overline">FLIGHT SCHOOL</p><h2>Two hands. Your build.</h2><div class="impact-setting"><button class="button secondary" id="manualImpactMode">IMPACT EFFECTS: ${impactMode().toUpperCase()} [V]</button><p>Full adds oversized cel explosions, melee impact arcs, camera punches, armor sparks and directional incoming-hit feedback. Reduced removes camera motion, speed lines, armor flashes and cockpit cracks while keeping the damage direction, armor-hit readout and combat audio. Press V in combat to switch. Your system motion preference is respected until you choose a mode.</p></div><div class="manual-controls"><span><kbd>LEFT CLICK</kbd> Use left hand · hold</span><span><kbd>RIGHT CLICK</kbd> Use right hand · hold</span><span><kbd>W A S D</kbd> Move · automatic boost</span><span><kbd>MOUSE</kbd> Aim continuously</span><span><kbd>Q / MIDDLE MOUSE</kbd> Strafe · hold heading</span><span><kbd>SPACE</kbd> Fly · hold</span><span><kbd>E</kbd> Special</span><span><kbd>SHIFT</kbd> Dash · 3s recharge</span></div><p>Equip any gun, melee weapon, or shield in either hand. Both hands can act at once and recover independently. There is no weapon cycling or zoom. Hold the button for repeated fire or melee attacks; release to lower a shield. All thrust is unlimited. Mouse movement always aims, including without mouse capture. Hold Q or the middle mouse button to lock your movement heading while aiming freely; release to follow your aim again. At the edge of the battlefield, the uncaptured mouse keeps turning. Esc releases the cursor and pauses aim until you click the battlefield.</p><h3>Dash through the fight.</h3><p>Every mech has a damaging dash. Press Shift to dash in your movement direction, or along your aim when stationary. It deals 160 damage and staggers each enemy you pass through once, then recharges in 3 seconds. Your weapons pause during the dash. Solid terrain stops it. E uses your equipped special.</p><h3>Give each hand a job.</h3><p>Carbine and railgun reward hits on the upper quarter of enemy armor; gold damage numbers mark precision hits. Aim at the gold strip on practice targets. Rail shots also pierce and interrupt. Shotgun blasts have a tight center for mid-range hits and push back close enemies. Rockets gently track enemies near your aim when fired; sharp dodges and cover break guidance. Plasma builds three visible purple charge pips: the fourth hit causes a burst that interrupts nearby foes. Hits from teammates combine, but charges expire after 1.5 seconds without a hit. Gatling accuracy and fire rate build while held for 0.6 seconds. Flames leave a short burn, so you can ignite a group and attack with the other hand. The phaser trades damage for reliable beam tracking and repairs. Pair range with crowd control, or burst damage with sustain. No additional buttons are needed.</p><h3>Melee earns its slot.</h3><p>The laser sword deals 180 damage on contact and launches a wide 90-damage wave. A target hit by the blade does not also take wave damage. The plasma sledgehammer deals 300 on direct contact and releases a 220m radial blast that staggers targets; an aerial slam dives to the ground first. The pile lance delivers a 288-damage thrust at 200m and interrupts attacks. Shock claws cleave at 110m and restore 3 armor per connected swing, once even when several targets are hit. The scythe sweeps a 190m circle and pulls enemies 70m closer. Most weapons sustain 180–285 damage per second at their effective range. The phaser trades damage for healing; blast damage falls off away from a direct hit. Stunned enemies take normal damage.</p><p>Hold the button assigned to the Bulwark to raise it in front of you. Its plate covers 54% of the body's height and reduces covered frontal bullet hits by 80%. Your head, feet, sides, and back remain vulnerable. Releasing the button removes protection. Two shields do not multiply damage reduction. Your other hand remains usable.</p><h3>Read the hostile frame.</h3><p>Enemies commit to their warning. Leave charge lanes and amber impact circles; break a Needle’s sightline; use EMP, lance, rail or hammer to interrupt. Pale ground rings mark recovery openings. Green circles and open petals signal a Mender repairing another robot. Flight avoids ground stomps and artillery.</p>${Object.values(ENEMY_ROLES).filter(e=>e.counter).map(e=>`<p><b>${e.name} / ${e.role}</b> · ${e.counter}</p>`).join('')}<h3>Earn in combat. Refit between missions.</h3><p>Play nine missions across three acts. Shared salvage comes from enemies and objectives. Extract to earn one personal upgrade choice, with a second for enough salvage. Install on the campaign refit screen before the next drop. Modules stack up to three times and last the run. Defeat or withdrawal ends the run; saved workshop mechs remain. Mission drills let you practice every arena without campaign rewards.</p><h3>Cinderfall · Operation 01</h3><p>Land, destroy shield relays and orbital batteries, recover six cells for the canyon crawler, break the reactor coolant nodes, defeat the warden, and extract. Walk or fly near a loose cell to carry it; approach the crawler to deliver. You can carry one cell at a time and still fight normally. A downed or disconnected pilot drops their cell. Checkpoints repair the squad. Two emergency redeploys recover a full squad wipe after seven seconds. Stay close to a downed ally for a free revive. Avoid damage for seven seconds to start slow hull repair. All surviving pilots must land on the extraction pad for six seconds once the ship arrives.</p><h3>Reports and suggestions.</h3><p>Press F8 or Report to capture the game and send a bug or suggestion to GitHub. Add text or an optional voice recording. Solo play pauses while reporting; co-op continues.</p><h3>Your test platform.</h3><p>Targets reset automatically. Try melee on the close target and wide attacks against the cluster. E uses your special; choose Repair field for healing. Click the railgun once: it charges automatically for 0.66 seconds, fires, then recovers for 0.5 seconds. Keep holding to repeat the full charge-and-recovery cycle. Releasing finishes the current charge but stops the next cycle. Dashing cancels a charge. The Dynamo cannon reloads through movement: boost, fly, or dash 500m to charge its next 280-damage shot. Its reticle ring shows charge. Standing still, aiming, falling, or pushing against a wall does not recharge it. Every equipped item adds weight. Mix five frame parts and paint each independently. Select Boosters to choose exhaust color.</p><p>Touch: left stick moves, drag to aim, hold LEFT HAND or RIGHT HAND to attack, and hold FLIGHT to rise. Keep the host tab active in co-op.</p>`);$('#manualImpactMode').onclick=()=>{toggleImpactMode();syncImpactMode();};}
-
-$$('[data-view]').forEach(b=>b.onclick=()=>{if(b.dataset.view==='builds')showBuilds();else if(b.dataset.view==='manual')showManual();else $('#modal').close();});$('#controlsLink').onclick=showManual;$('#gameHelp').onclick=showManual;
-function syncImpactMode(){const full=impactMode()==='full';$('#impactMode').textContent='FX: '+(full?'Full':'Reduced');$('#impactMode').setAttribute('aria-pressed',String(full));$('#impactMode').setAttribute('aria-label','Impact effects: '+impactMode()+'. Click to switch.');if($('#manualImpactMode'))$('#manualImpactMode').textContent='IMPACT EFFECTS: '+impactMode().toUpperCase()+' [V]';}
-$('#impactMode').onclick=()=>{toggleImpactMode();syncImpactMode();toast('Impact effects: '+impactMode());};syncImpactMode();
-const gameKeys=['KeyW','KeyA','KeyS','KeyD','KeyQ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyE','ShiftLeft','ShiftRight','Tab','KeyU','Digit1','Digit2','Digit3'];
-window.addEventListener('keydown',e=>{if(!playing||($('#modal').open||feedback?.isOpen()))return;if(gameKeys.includes(e.code))e.preventDefault();if(!e.repeat&&sortieHud.key(e.code)){if(document.pointerLockElement)document.exitPointerLock();return;}keys[e.code]=true;syncStrafe();if(!e.repeat&&e.code==='KeyH'){showManual();return;}if(!e.repeat&&e.code==='KeyE')pressAbility=true;if(!e.repeat&&['ShiftLeft','ShiftRight'].includes(e.code))pressDash=true;if(e.code==='Tab'&&!['sandbox','trial'].includes(world?.mission.mode))$('#levelMapPanel').hidden=false;if(!e.repeat&&e.code==='KeyV')$('#impactMode').click();if(!e.repeat&&e.code==='KeyM')$('#soundToggle').click();});
-window.addEventListener('keyup',e=>{keys[e.code]=false;syncStrafe();if(e.code==='Tab')$('#levelMapPanel').hidden=true;});
-function clearInputs(){keys={};mouse.strafe=false;setStrafe(false);mouseLook.reset();$('#levelMapPanel').hidden=true;mouse.left=false;mouse.right=false;view.aiming=false;touch.left=false;touch.right=false;touch.fly=false;touch.x=touch.y=0;pressAbility=pressMelee=pressDash=false;handPress.left=handPress.right=false;}
-window.addEventListener('blur',clearInputs);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearInputs();});
-const mouseLook=createMouseLook({canvas:$('#battle'),active:()=>playing&&!($('#modal').open||feedback?.isOpen())&&$('#levelMapPanel').hidden,look,onLock:locked=>view.locked=locked,onRelease:clearInputs,onFallback:()=>toast('Mouse aims without clicking. Move to the screen edge to keep turning.')});
-function syncStrafe(){setStrafe(!!keys.KeyQ||!!mouse.strafe);}
-function syncMouse(e){Object.assign(mouse,mouseButtons(e.buttons));mouse.strafe=!!(e.buttons&4);view.aiming=false;syncStrafe();}
-$('#battle').addEventListener('mousedown',e=>{if(!playing||($('#modal').open||feedback?.isOpen()))return;initAudio();if(e.button<0||e.button>2)return;e.preventDefault();syncMouse(e);if(e.button===0||e.button===2)handPress[e.button===0?'left':'right']=true;mouseLook.capture();});
-window.addEventListener('mouseup',e=>{if(playing)syncMouse(e);});
-$('#battle').addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault();});
-$('#battle').addEventListener('pointercancel',clearInputs);
-$('#battle').addEventListener('contextmenu',e=>e.preventDefault());$('#abilityButton').onclick=()=>pressAbility=true;$('#dashButton').onclick=()=>pressDash=true;$('#mapToggle').onclick=()=>{if(!['sandbox','trial'].includes(world?.mission.mode))$('#levelMapPanel').hidden=!$('#levelMapPanel').hidden;};$('#flightButton').addEventListener('pointerdown',e=>{e.target.setPointerCapture(e.pointerId);touch.fly=true;});$('#flightButton').addEventListener('pointerup',()=>touch.fly=false);$('#flightButton').addEventListener('pointercancel',()=>touch.fly=false);function syncPilotVoice(){const on=pilotVoiceEnabled();$('#voiceToggle').textContent='VOICE '+(on?'ON':'OFF');$('#voiceToggle').setAttribute('aria-pressed',String(on));}
-$('#voiceToggle').onclick=()=>{initAudio();togglePilotVoice();syncPilotVoice();};syncPilotVoice();
-installPilotVoicePicker({openModal:modal,selected:selectedPilotVoice,select:selectPilotVoice,preview:previewPilotVoice,stop:stopPilotVoice,enabled:pilotVoiceEnabled});
-$('#soundToggle').onclick=()=>{$('#soundToggle').textContent=toggleSound()?'SOUND OFF [M]':'SOUND ON [M]';};
-let joystickPointer=null;$('#joystick').addEventListener('pointerdown',e=>{joystickPointer=e.pointerId;e.target.setPointerCapture(e.pointerId);updateStick(e);});$('#joystick').addEventListener('pointermove',e=>{if(joystickPointer===e.pointerId)updateStick(e);});function updateStick(e){const r=$('#joystick').getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2,l=Math.max(40,Math.hypot(x,y));touch.x=x/l;touch.y=y/l;$('#joystick i').style.transform=`translate(${touch.x*32}px,${touch.y*32}px)`;}function releaseStick(){joystickPointer=null;touch.x=touch.y=0;$('#joystick i').style.transform='';}$('#joystick').addEventListener('pointerup',releaseStick);$('#joystick').addEventListener('pointercancel',releaseStick);for(const [id,hand]of[['touchFire','left'],['touchMelee','right'],['leftHandButton','left'],['rightHandButton','right']]){const button=$('#'+id);button.addEventListener('contextmenu',e=>e.preventDefault());button.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();button.setPointerCapture(e.pointerId);touch[hand]=true;handPress[hand]=true;});for(const event of['pointerup','pointercancel','lostpointercapture'])button.addEventListener(event,()=>touch[hand]=false);}
-
-function getInput(){const p=world?.players.find(p=>p.id===localId);if(!p||($('#modal').open||feedback?.isOpen()))return{x:0,y:0,fire:false};if(keys.ArrowLeft)view.yaw-=.055;if(keys.ArrowRight)view.yaw+=.055;const movement=movementInput(keys,touch),aim=getAim(p),input={...movement,...aim,left:mouse.left||touch.left,right:mouse.right||touch.right,leftPressed:handPress.left,rightPressed:handPress.right,ability:pressAbility,dash:pressDash,auto:false};pressAbility=pressMelee=pressDash=false;handPress.left=handPress.right=false;return input;}
-feedback=installFeedback({
- capture:()=>reportCapture.request(),
- context:()=>{const p=world?.players.find(p=>p.id===localId);return {
-  capturedAt:new Date().toISOString(),client:'in-game-feedback-v1',build:document.querySelector('#buildLabel')?.title||'Development build',page:location.pathname,
-  screen:playing?'battle':document.body.dataset.screen,browser:navigator.userAgent,
-  viewport:{width:innerWidth,height:innerHeight,pixelRatio:devicePixelRatio},effects:impactMode(),
-  session:room?(isHost?'co-op host':'co-op guest'):'solo',players:world?.players.length||1,
-  mission:{name:m.name,mode:m.mode,seed:m.seed,id:m.id},
-  round:world?{time:Math.round(world.time*10)/10,status:world.status,zone:world.zoneIndex,kills:world.kills}:null,
-  player:p?{x:Math.round(p.x),y:Math.round(p.y),altitude:Math.round(p.altitude),hp:Math.round(p.hp)}:null,
-  loadout:cleanBuild(build)
- };},
- onOpen:()=>{if(document.pointerLockElement)document.exitPointerLock();clearInputs();},
- onClose:()=>{clearInputs();lastTick=performance.now();}
+$('#modal').addEventListener('cancel', (e) => {
+  if (playing && world?.status !== 'playing') e.preventDefault();
 });
-let lastTick=performance.now();setInterval(()=>{const now=performance.now(),dt=Math.min(.05,(now-lastTick)/1000);lastTick=now;if(!playing||!world||(!room&&feedback?.isOpen()))return;mouseLook.update(dt);const input=getInput();if(isHost||!room){setInput(world,localId,input);step(world,dt);if(now-lastSnapshot>=33){lastSnapshot=now;if(room)broadcast({type:'state',world:snapshot(world,false)});}if(world.status!=='playing')finish();}else{safeSend(hostConn,{type:'input',input});if(now-receivedAt>10000){resetNetwork('Host stopped responding. Create or join a new room.');}}},1000/60);
-function updateMotionReticle(p){
- const hands=(p.hands||[]).map((h,i)=>({...h,index:i})).filter(h=>WEAPONS[h.item]?.moveRecharge),panel=$('#motionReticle');panel.hidden=!hands.length;if(!hands.length)return;
- const dual=hands.length===2;$('#motionRightTrack').style.display=dual?'':'none';
- for(let i=0;i<2;i++){const ring=$(i?'#motionRight':'#motionLeft'),h=hands[i];ring.style.display=h?'':'none';if(h)ring.style.strokeDashoffset=100-Math.min(100,(h.motionCharge||0)*100);}
- const ready=hands.every(h=>h.motionCharge>=1&&h.shot<=0);panel.dataset.ready=String(ready);
- $('#motionChargeText').textContent=hands.map(h=>(h.index?'R ':'L ')+(h.motionCharge>=1?(h.shot>0?'CYCLING':'READY'):Math.floor(h.motionCharge*100)+'%')).join(' · ');
- $('#motionChargeHint').textContent=ready?'DYNAMO':hands.some(h=>h.motionCharge<1)?'MOVE TO RECHARGE':'RECOVERING';
- panel.setAttribute('aria-label',hands.map(h=>(h.index?'Right':'Left')+' Dynamo charge '+Math.round(h.motionCharge*100)+' percent').join('. '));
+function progressionForBuild() {
+  return deploymentProgression(career, build.chassis || 'custom', pilot);
 }
-let hudAt=0;function updateHud(){destructionLab.update(world);const p=world.players.find(p=>p.id===localId);if(!p)return;sortieHud.update(world,p);$('#game').classList.toggle('boosting',!!p.boosting);$('#flightButton').classList.toggle('engaged',!!p.airborne);const task=taskStatus(world,p,view.yaw);$('#taskBanner').hidden=!task.warning&&!task.notice;const objectives=objectiveStatus(world,p);for(const[id,key]of[['personalObjective','personal'],['personalObjectiveDetail','personalDetail'],['teamObjective','team'],['teamObjectiveDetail','teamDetail']]){if($('#'+id).textContent!==objectives[key])$('#'+id).textContent=objectives[key];}$('#objectiveMode').textContent=world.mission.mode==='sandbox'?'TEST BAY':world.mission.mode==='trial'?'COMBAT TRIAL':world.operation?world.mission.name:world.siege?'PROTOTYPE 02':'MISSION';$('#teamProgress').hidden=objectives.progress===null;$('#teamProgressFill').style.width=(objectives.progress||0)+'%';if($('#levelLabel').textContent!==task.label)$('#levelLabel').textContent=task.label;if($('#objectiveText').textContent!==task.detail)$('#objectiveText').textContent=task.detail;$('#taskKind').textContent=task.warning?'! WARNING':task.notice?'MISSION UPDATE':'TASK / '+String(world.zoneIndex+1).padStart(2,'0');$('#taskBanner').classList.toggle('warning',!!task.warning);$('#taskBanner').classList.toggle('heavy-arrival',!!task.heavy);$('#progressBar').style.width=(world.mission.zones.length?world.cleared/world.mission.zones.length*100:0)+'%';$('#hudName').textContent=p.build.name;const hull=hullStatus(p,mechStats(p.build).hp);$('#hullHealth').dataset.state=hull.state;$('#hullValue').textContent=hull.current+' / '+hull.max;$('#hullFill').style.width=hull.percent+'%';$('#hullMeter').setAttribute('aria-valuenow',String(hull.percent));$('#hullCondition').textContent=hull.state==='offline'?'OFFLINE':hull.state==='critical'?'CRITICAL':'HULL';$('#game').classList.toggle('guarding',!!p.guarding);const selected=activeItem(p),special=specialFor(p),item=EQUIPMENT[selected];$('#abilityLabel').textContent=special?ABILITIES[special].name.toUpperCase():'NO SPECIAL';for(const kind of['dash']){const remaining=p[kind+'Cd']||0,active=p.moveKind===kind&&p.moveTime>0,ready=p.hp>0&&remaining<=0&&!(p.moveTime>0);$('#'+kind+'Cd').textContent=active?'ACTIVE':remaining>0?remaining.toFixed(1)+'s':p.moveTime>0?'WAIT':'READY';$('#'+kind+'Button').disabled=!ready;$('#'+kind+'Button').classList.toggle('active',active);$('#'+kind+'Button').setAttribute('aria-label',COMBAT_MOVES[kind].name+': '+(active?'active':ready?'ready':remaining>0?remaining.toFixed(1)+' seconds':'finish current move'));$('#'+kind+'Fill').style.width=Math.max(0,100*(1-remaining/COMBAT_MOVES[kind].cd))+'%';}const ultimate=ultimateStatus(p,ABILITIES[special]);$('#abilityCd').textContent=ultimate.counter;$('#abilityStatus').textContent=ultimate.detail;$('#abilityButton').dataset.state=ultimate.state;$('#abilityButton').disabled=!ultimate.ready;$('#abilityButton').setAttribute('aria-label',`${ABILITIES[special]?.name||'Ultimate'}: ${ultimate.ready?'ready, press E':ultimate.detail+', '+ultimate.counter+' to recharge'}`);$('#ultimateFill').style.width=ultimate.percent+'%';$('#ultimateMeter').setAttribute('aria-valuenow',String(ultimate.percent));$('#abilityButton').classList.toggle('engaged',p.active>0);for(let i=0;i<2;i++){const hand=i?'right':'left',id=p.build.equipment[i],name=WEAPONS[id].name.split(' / ').at(-1),h=p.hands?.[i]||{},state=h.guarding?'BLOCKING':id==='guard'?'HOLD TO BLOCK':h.slamDiving?'DIVING':h.meleeTime>0?'SWINGING':h.railCharge>0?'CHARGE '+Math.round(h.railCharge*100)+'%':h.flame?'FLAME ACTIVE':h.beam?'BEAM ACTIVE':id==='rotary'&&(h.spin||0)>0?((h.spin||0)>=1?'STABILIZED':'SPIN '+Math.round((h.spin||0)*100)+'%'):id==='dynamo'&&(h.motionCharge||0)<1?'MOVE '+Math.floor((h.motionCharge||0)*100)+'%':h.shot>0?(id==='rail'?'RECOVERING':'CYCLING'):id==='rail'?'HOLD TO REPEAT':'READY';$('#'+hand+'HandName').textContent=name;$('#'+hand+'HandState').textContent=state;$('#'+hand+'HandButton').classList.toggle('active',!!h.guarding||h.meleeTime>0||h.shot>0||h.railCharge>0);$(i?'#activeEquipment':'#diagramMelee').textContent=name;}updateMotionReticle(p);$('#equipmentState').textContent='INDEPENDENT HAND CONTROLS';$('#zoomState').textContent=p.build.equipment.includes('rail')?'RAIL: CLICK / HOLD':'HOLD TO USE';$('#crosshair').classList.toggle('hit',world.time-p.hitTime<.12);$('#viewHint').hidden=matchMedia('(pointer:coarse)').matches||!view.strafing&&!mouseLook.paused&&view.locked&&world.time>9;$('#viewHint').textContent=mouseLook.paused?'AIM PAUSED · Click battlefield to resume':view.strafing?'STRAFE LOCK · Release Q / middle mouse to follow aim':'Mouse aims · Hold Q / middle mouse to strafe · Esc releases cursor';$('#damageVignette').style.opacity=world.mission.mode==='trial'||world.operation?Math.max(0,1-(world.time-(p.lastHurt??-10))/.3)*.45:0;$('#squadLinkState').textContent=world.players.length+' / 4';$('#game').style.setProperty('--squad-extra',Math.max(0,world.players.length-1)*14+'px');const squadMarkup=squadStatus(world.players,localId).filter(q=>!q.empty).map(q=>`<div class="squad-channel ${q.downed?'downed':''}"><span>0${q.channel}</span><b>${escape(q.name)}${q.self?' · YOU':''}</b><small>${q.status}</small></div>`).join('');if($('#squadHud').innerHTML!==squadMarkup)$('#squadHud').innerHTML=squadMarkup;}
+function me() {
+  return {
+    id: localId,
+    name: pilot,
+    build: cleanBuild(build),
+    progression: progressionForBuild(),
+    ready: false,
+  };
+}
+function localPlayer() {
+  return roster.find((p) => p.id === localId);
+}
+function settleCareer() {
+  if (!campaignMissionActive || world?.status !== 'won' || !world.mission.campaign) return false;
+  const next = awardCareerForWorld(career, world, localId, pilot);
+  if (next === career) return false;
+  if (!write('iw-career-v1', next)) return false;
+  const chassis = world.players.find((p) => p.id === localId)?.build.chassis || 'custom';
+  const mechPoints =
+      availablePoints(next, 'mech', chassis) - availablePoints(career, 'mech', chassis),
+    pilotPoints = availablePoints(next, 'pilot', pilot) - availablePoints(career, 'pilot', pilot);
+  career = next;
+  return mechPoints || pilotPoints
+    ? `Career earned: +${mechPoints} chassis research · +${pilotPoints} pilot points. Visit Rook at Parts foundry and Echo at Signal archive.`
+    : 'Career trees are fully funded. Respec freely at Parts foundry or Signal archive.';
+}
+function safeSend(conn, data) {
+  if (conn?.open) {
+    try {
+      if (conn.bufferSize < 12) conn.send(data);
+    } catch {}
+  }
+}
+function broadcast(data) {
+  for (const conn of connections.values()) safeSend(conn, data);
+}
+function broadcastLobby() {
+  hubState = syncHubPlayers(hubState, roster);
+  broadcast({
+    type: 'lobby',
+    roster,
+    mission: m,
+    room,
+    campaign,
+    armory,
+    hub: hubSnapshot(hubState),
+  });
+  updateSquad();
+}
+function buildChanged() {
+  build = cleanBuild(build);
+  write('iw-active', build);
+  if (room) {
+    if (isHost) {
+      const p = localPlayer();
+      if (p) {
+        p.build = cleanBuild(build);
+        p.progression = progressionForBuild();
+        p.ready = false;
+      }
+      broadcastLobby();
+    } else {
+      const p = localPlayer();
+      if (p) {
+        p.build = cleanBuild(build);
+        p.progression = progressionForBuild();
+        p.ready = false;
+      }
+      safeSend(hostConn, {
+        type: 'loadout',
+        build,
+        name: pilot,
+        progression: progressionForBuild(),
+      });
+    }
+  }
+  updateBuild();
+  updateSquad();
+}
+const slotHints = {};
+function fitInto(slot, payload) {
+  const next = fitComponent(build, slot, payload);
+  if (!next) return;
+  build = next;
+  activeSlot = slot;
+  buildChanged();
+  document.querySelector(`[data-slot="${slot}"]`)?.focus({ preventScroll: true });
+}
+function chooseChassis(size = chassisFor(build).size || 'medium') {
+  modal(chassisPickerMarkup(build, size));
+  document
+    .querySelectorAll('[data-chassis-class]')
+    .forEach((el) => (el.onclick = () => chooseChassis(el.dataset.chassisClass)));
+  document.querySelectorAll('[data-chassis-fit]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        build = cleanBuild({ ...build, chassis: el.dataset.chassisFit });
+        $('#modal').close();
+        buildChanged();
+      }),
+  );
+  document.querySelectorAll('[data-chassis-factory]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        build = cleanBuild(chassisBlueprint(el.dataset.chassisFactory));
+        $('#modal').close();
+        buildChanged();
+      }),
+  );
+}
+$('#chooseChassis').onclick = () => chooseChassis();
+function updateBuild() {
+  const base = gridState(build),
+    stats = combatStats(me()),
+    f = { ...base, hp: stats.hp, speed: stats.speed, lift: stats.lift },
+    valid = f.valid,
+    isPart = !!PARTS[activeSlot],
+    slot = Number(activeSlot.replace('equip', '')) || 0,
+    current = isPart ? build.parts[activeSlot] : build.equipment[slot],
+    selectedSocket = SOCKETS.find((s) => s.id === activeSlot);
+  $('#mechName').textContent = build.name;
+  $('#homeMachineName').textContent = build.name;
+  $('#previewName').textContent = build.name;
+  $('#frameRole').textContent = '';
+  const chassis = chassisFor(build);
+  $('#chooseChassis').textContent =
+    chassis.name + (chassis.size ? ' · ' + chassis.size : '') + ' ↗';
+  $('#chassisSummary').textContent =
+    `${chassis.role} · ${f.heavyUsed}/${f.heavySlots} heavy mounts · ${chassis.scale.toFixed(2)}× size`;
+  $('#frameDescription').textContent = build.equipment
+    .map((id) => EQUIPMENT[id].name.split(' / ').at(-1))
+    .join(' · ');
+  $('#modelCode').textContent = f.weightClass + ' MECH';
+  const socketHTML = (s) =>
+    `<button class="grid-socket" aria-pressed="${s.id === activeSlot}" aria-label="${s.label}: ${s.item.name.split(' / ').at(-1)}, ${s.weight} tonnes" data-slot="${s.id}" style="--socket-color:${build.partColors[s.id] || '#a1d9c2'}"><span class="socket-label">${s.label}</span><span class="socket-icon">${itemIcon(s.id, s.selected, s.item)}</span><strong>${s.item.name.split(' / ').at(-1)}</strong><small>${s.weight}t</small></button>`;
+  $('#partTabs').innerHTML = f.sockets.slice(0, 5).map(socketHTML).join('');
+  $('#equipmentTabs').innerHTML = f.sockets.slice(5).map(socketHTML).join('');
+  $$('[data-slot]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        activeSlot = el.dataset.slot;
+        const hand = WEAPONS[build.equipment[Number(activeSlot.slice(5))]];
+        equipmentFilter = hand
+          ? hand.guard
+            ? 'defensive'
+            : hand.melee
+              ? 'melee'
+              : 'ranged'
+          : 'all';
+        updateBuild();
+        document.querySelector(`[data-slot="${activeSlot}"]`)?.focus({ preventScroll: true });
+      }),
+  );
+  $('#previewPower').hidden = valid;
+  $('#previewPowerDetail').textContent = f.issues.join(' ');
+  document.body.classList.toggle('mech-offline', !valid);
+  for (const id of ['testWeapons', 'testThrusters']) $('#' + id).disabled = !valid;
+  if (!valid) {
+    thrusterPreview = false;
+    equipmentPreview = false;
+    $('#testWeapons').textContent = 'Test equipment';
+    $('#testThrusters').textContent = 'Test boosters';
+    $('#testWeapons').setAttribute('aria-pressed', 'false');
+    $('#testThrusters').setAttribute('aria-pressed', 'false');
+  }
+  $('#workshopStatus').textContent = valid ? 'READY TO TEST' : 'POWER OFFLINE';
+  $('#assemblyStatus').textContent = valid ? 'Online' : 'Needs refit';
+  $('#assemblyStatus').classList.toggle('offline', !valid);
+  $('#assemblyStats').innerHTML = `${f.weight}<span> / ${f.capacity}t</span>`;
+  $('#assemblyPerformance').textContent =
+    `${f.hp} armor · ${Math.round(f.speed * f.boost)} boost speed`;
+  $('#assemblyLoad').style.width = Math.min(100, (f.weight / f.capacity) * 100) + '%';
+  const meter = $('#powerSegments');
+  meter.setAttribute('aria-valuemin', '0');
+  meter.setAttribute('aria-valuemax', f.capacity);
+  meter.setAttribute('aria-valuenow', Math.min(f.weight, f.capacity));
+  meter.setAttribute(
+    'aria-valuetext',
+    `${f.weight} of ${f.capacity} tonnes. ${valid ? 'Power online' : 'Overloaded'}`,
+  );
+  meter.innerHTML = f.sockets
+    .map(
+      (s) =>
+        `<i class="${s.id === activeSlot ? 'selected' : ''}" style="flex-basis:${(s.weight / Math.max(f.weight, f.capacity)) * 100}%" title="${s.label}: ${s.weight}t"></i>`,
+    )
+    .join('');
+  $('#powerRemaining').textContent = valid
+    ? f.capacity - f.weight + 't available'
+    : f.weight > f.capacity
+      ? f.weight - f.capacity + 't over capacity'
+      : f.heavyUsed + '/' + f.heavySlots + ' heavy mounts';
+  $('#selectionTitle').textContent = selectedSocket.label;
+  $('#parts').classList.toggle('frame-choices', isPart);
+  const filters = $('#equipmentFilters');
+  filters.hidden = isPart || slot === 2;
+  filters.innerHTML = ['all', 'ranged', 'melee', 'defensive']
+    .map(
+      (type) =>
+        `<button data-filter="${type}" aria-pressed="${type === equipmentFilter}">${type[0].toUpperCase() + type.slice(1)}</button>`,
+    )
+    .join('');
+  $$('[data-filter]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        equipmentFilter = el.dataset.filter;
+        updateBuild();
+      }),
+  );
+  const options = Object.entries(socketOptions(activeSlot)).filter(
+    ([id, v]) =>
+      isPart ||
+      slot === 2 ||
+      equipmentFilter === 'all' ||
+      (equipmentFilter === 'defensive'
+        ? v.guard
+        : equipmentFilter === 'melee'
+          ? v.melee && !v.guard
+          : !v.melee),
+  );
+  $('#paintRow').hidden = !isPart;
+  $('#paintLabel').textContent = (PART_LABELS[activeSlot] || 'Part') + ' paint';
+  $('#colors').innerHTML = COLORS.map(
+    ([c, n]) =>
+      `<button class="swatch ${build.partColors[activeSlot] === c ? 'selected' : ''}" style="--swatch:${c}" data-color="${c}" aria-label="${n}" title="${n}" aria-pressed="${build.partColors[activeSlot] === c}"></button>`,
+  ).join('');
+  $$('[data-color]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        if (isPart) {
+          build.partColors[activeSlot] = el.dataset.color;
+          buildChanged();
+        }
+      }),
+  );
+  $('#trailRow').hidden = activeSlot !== 'booster';
+  $('#trailColors').innerHTML = TRAIL_COLORS.map(
+    ([c, n]) =>
+      `<button class="swatch ${build.trailColor === c ? 'selected' : ''}" style="--swatch:${c}" data-trail="${c}" aria-label="${n} exhaust" aria-pressed="${build.trailColor === c}"></button>`,
+  ).join('');
+  $$('[data-trail]').forEach(
+    (el) =>
+      (el.onclick = () => {
+        build.trailColor = el.dataset.trail;
+        thrusterPreview = true;
+        $('#testThrusters').textContent = 'Stop boosters';
+        $('#testThrusters').setAttribute('aria-pressed', 'true');
+        buildChanged();
+      }),
+  );
+  $('#weightBudget').textContent = f.weight + ' / ' + f.capacity + ' t';
+  $('#weightBar').style.width = Math.min(100, (f.weight / f.capacity) * 100) + '%';
+  $('#weaponDesc').textContent = `Frame ${f.frameWeight}t + equipment ${f.equipmentWeight}t.`;
+  $('#abilityDesc').textContent = '';
+  $('#buildHint').textContent = f.issues.join(' ');
+  $('#buildHint').classList.toggle('error', !valid);
+  for (const id of ['saveMech', 'testBuildTop', 'startTrial', 'startMission'])
+    $('#' + id).disabled = !valid;
+  $('#armorStat').textContent = f.hp;
+  $('#speedStat').textContent = f.speed;
+  $('#damageStat').textContent = build.equipment.filter((id) => WEAPONS[id]).length;
+  $('#armorBar').style.width = Math.min(100, (f.hp / 600) * 100) + '%';
+  $('#speedBar').style.width = Math.min(100, (f.speed / 450) * 100) + '%';
+  $('#damageBar').style.width = '0%';
+  $('#engineering').textContent =
+    `Unlimited thrust · ${f.lift} lift/sec · ${Math.round(f.speed * f.boost)} boost speed`;
+  updateWorkshopWorkbench({
+    build,
+    activeSlot,
+    current,
+    options,
+    selectedSocket,
+    socketItems: socketOptions(activeSlot),
+    onSlot: (id) => document.querySelector('button[data-slot=' + id + ']')?.click(),
+    onFit: (id) => fitInto(activeSlot, { kind: selectedSocket.kind, id }),
+  });
+  renderCampaign();
+}
 
-const labelNodes=new Map();function updateLabels(){const goal=world.mission.zones[world.zoneIndex]||world.mission.exit;const entries=[...(world.damageEvents||[]).filter(e=>e.kind!=='incoming').map(e=>({...e,id:'damage-'+e.id,z:e.z+(1-e.life)*28,offset:((e.id%5)-2)*19,name:String(e.amount)+(e.kind==='precision'?'!':''),color:e.kind==='melee'?'#a4f4ff':e.kind==='phaser'?'#9fffd0':e.kind==='plasma'?'#d7b6ff':'#ffe7a3',damage:true})), ...(world.teamCombos||[]).slice(-4).map(c=>({...c,id:'combo-'+c.id,z:c.z+65+(world.time-c.at)*35,name:c.label,combo:true,life:.7-(world.time-c.at)})),...((world.operation||world.siege)?(world.siege?destructionMarkers(world):operationMarkers(world,world.players.find(p=>p.id===localId))).sort((a,b)=>{const p=world.players.find(q=>q.id===localId);return Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y);}).slice(0,3).map((v,i)=>({...v,id:'operation-'+i,color:'#aaffc5'})):['sandbox','trial'].includes(world.mission.mode)?[]:[{id:'waypoint',x:goal.x,y:goal.y,z:100,name:world.mission.zones[world.zoneIndex]?goal.name:'EXTRACTION',color:'#c8f6d6'}]),...world.players.filter(p=>p.id!==localId).map(p=>({...p,z:80+(p.altitude||0),name:p.name+(p.hp<=0?' / DOWN':''),color:p.build.color}))];const ids=new Set(entries.map(e=>e.id));for(const[id,node]of labelNodes)if(!ids.has(id)){node.remove();labelNodes.delete(id);}const occupied=[];for(const e of entries){let node=labelNodes.get(e.id);if(!node){node=document.createElement('div');node.className='world-label';$('#worldLabels').append(node);labelNodes.set(e.id,node);}const q=projectWorld(e.x,e.y,e.z);node.hidden=!q.visible;node.textContent=e.name;node.classList.toggle('damage-number',!!e.damage);node.classList.toggle('combo-label',!!e.combo);node.classList.toggle('heavy-hit',!!e.damage&&e.amount>=120);node.classList.toggle('precision-hit',e.kind==='precision');node.style.opacity=e.combo?Math.min(1,e.life*4):e.damage?Math.min(1,e.life*3):1;node.style.color=e.combo?(e.kind==='finish'?'#fff0b8':'#b6fbff'):e.damage?(e.kind==='precision'?'#fff1a6':e.kind==='burn'?'#ffb16e':e.kind==='overload'?'#dcb5ff':'#caffd5'):'#95ffb0';q.x+=e.offset||0;if(e.damage&&q.visible)occupied.push({x:q.x,y:q.y,width:node.offsetWidth,height:node.offsetHeight});if(!e.damage&&q.visible){const width=node.offsetWidth,height=node.offsetHeight;let attempts=0;while(occupied.some(r=>Math.abs(q.x-r.x)<(width+r.width)/2+8&&Math.abs(q.y-r.y)<Math.max(height,r.height)+6)&&attempts++<8)q.y-=height+8;occupied.push({x:q.x,y:q.y,width,height});}node.style.transform=`translate(${q.x}px,${q.y}px) translate(-50%,-100%) scale(${e.damage?1+Math.max(0,1-(1-e.life)/.15)*.55*impactLevel():1})`;}}
-function drawRadar(){const p=world.players.find(p=>p.id===localId);if(p)drawNearbyMap($('#radar'),world,p,view.yaw);}
-function frame(t){const homeDelta=homeTick?Math.min(.05,(t-homeTick)/1000):0;homeTick=t;try{if(playing&&world){drawBattle3D($('#battle'),world,localId,t/1000);updateSound(world,localId);if(t-hudAt>65){updateHud();updateLabels();drawRadar();if(!$('#levelMapPanel').hidden)drawMap($('#levelMap'),world.mission,world,localId);hudAt=t;}}else if(document.body.dataset.screen==='home'){updatePreviewSound(previewBuild(),t/1000,false);updateBoostSound(0);if(!homePaused)homeTime=reduced?2:homeTime+homeDelta;drawHomeBattle3D($('#mechPreview'),build,homeTime);}else if(document.body.dataset.screen==='garage'){updatePreviewSound(previewBuild(),t/1000,equipmentPreview);updateBoostSound(thrusterPreview?.8:0,build.parts.booster);drawPreview3D($('#mechPreview'),previewBuild(),reduced?0:t/1000,thrusterPreview,equipmentPreview);}else{updateBoostSound(0);updatePreviewSound(previewBuild(),t/1000,false);}reportCapture.frame(playing?$('#battle'):['home','garage'].includes(document.body.dataset.screen)?$('#mechPreview'):null);}catch(e){console.error(e);toast('Graphics interrupted. Return to the workshop and reload.');}requestAnimationFrame(frame);}
-updateBuild();updateSquad();updateMission();requestAnimationFrame(frame);window.addEventListener('resize',()=>{if(!playing)drawMap($('#missionMap'),m);});const invite=new URLSearchParams(location.search).get('room');if(invite&&/^[A-Z2-9]{6}$/i.test(invite))showJoin(invite.toUpperCase());
+function menuScreen(screen) {
+  if (screen === 'campaign') screen = 'hub';
+  if (document.body.dataset.screen !== screen && !deployment) sceneFlow.cut();
+  hubView.stop();
+  hubView.close();
+  document.body.dataset.screen = screen;
+  renderCampaign();
+  $('#mechPreview').setAttribute(
+    'aria-label',
+    screen === 'garage'
+      ? 'Mech viewer. Drag to rotate, scroll to zoom, or use arrow keys.'
+      : 'Your fitted mech in the service hangar',
+  );
+  window.scrollTo(0, 0);
+  $('#mainContent').scrollTop = 0;
+  thrusterPreview = false;
+  equipmentPreview = false;
+  $('#testWeapons').textContent = 'Test equipment';
+  $('#testWeapons').setAttribute('aria-pressed', 'false');
+  $('#testThrusters').textContent = 'Test boosters';
+  $('#testThrusters').setAttribute('aria-pressed', 'false');
+}
+$('#homeNav').onclick = () => menuScreen('home');
+$('#garageNav').onclick = $('#startGarage').onclick = () => menuScreen('garage');
+$('#garageBack').onclick = () => menuScreen(campaign ? 'campaign' : 'home');
+$('#campaignNav').onclick = $('#continueCampaign').onclick = () => openCampaign();
+const campaignView = createCampaignView($('#campaignScreen'), {
+  newRun: () => $('#startMission').click(),
+  refit: (request) => {
+    if (room && !isHost) safeSend(hostConn, { type: 'refit', request });
+    else applyRefit(localPlayer()?.name || pilot, request);
+  },
+  drill: (id) => startDrill(id),
+  legacy: () => startDrill('cinderfall'),
+  home: () => menuScreen('home'),
+  supply: () => hubView.walkTo('supply'),
+  workshop: () => menuScreen('garage'),
+  host: () => {
+    openCampaign();
+    hostRoom();
+  },
+  join: () => showJoin(),
+  invite: () => copyRoom(),
+  leave: () => resetNetwork('Left the squad.'),
+  ready: () => toggleReady(),
+  contract: (id) => {
+    if (room && !isHost) return;
+    if (!CONTRACTS.some((c) => c.id === id) || campaign.contract === id) return;
+    campaign = { ...campaign, contract: id, revision: campaign.revision + 1 };
+    persistCampaign();
+    m = campaignMission(campaign, planetMission);
+    roster.forEach((p) => (p.ready = false));
+    if (room) broadcastLobby();
+    updateMission();
+    updateSquad();
+  },
+  landing: (id) => {
+    if (room && !isHost) return;
+    if (!LANDINGS.some((p) => p.id === id) || campaign.landing === id) return;
+    campaign = { ...campaign, landing: id, revision: campaign.revision + 1 };
+    persistCampaign();
+    m = campaignMission(campaign, planetMission);
+    roster.forEach((p) => (p.ready = false));
+    campaignView.focusLanding(campaign);
+    if (room) broadcastLobby();
+    updateMission();
+    updateSquad();
+  },
+  mech: (value) => {
+    const [kind, index] = value.split('-'),
+      chosen =
+        kind === 'preset'
+          ? CAMPAIGN_MECHS[Number(index)]?.build
+          : kind === 'saved'
+            ? saved[Number(index)]
+            : null;
+    if (!chosen) return;
+    build = cleanBuild({
+      ...chosen,
+      equipment: [...chosen.equipment.slice(0, 2), build.equipment[2]],
+    });
+    buildChanged();
+  },
+  special: (id) => {
+    if (!Object.hasOwn(ABILITIES, id)) return;
+    build = cleanBuild({ ...build, equipment: [...build.equipment.slice(0, 2), id] });
+    buildChanged();
+  },
+  deploy: () => {
+    if (!hubDeployable() || !nearStation(hubState, localId, 'mission')) return;
+    if (room && (!isHost || !roster.every((p) => p.ready && validBuild(p.build)))) return;
+    if (!campaign || campaign.runState !== 'active' || !validBuild(build) || connecting) return;
+    if (m.mode !== 'operation' || m.campaign?.id !== campaign.id)
+      m = campaignMission(campaign, planetMission);
+    $('#deploy').click();
+  },
+});
 
+const hubView = createHubView($('#hubScreen'), $('#campaignScreen'), {
+  inputBlocked: () => !!feedback?.isOpen() || $('#interfaceMenu').open,
+  command: () => renderCampaign(),
+  host: () => hostRoom(),
+  join: () => showJoin(),
+  invite: () => copyRoom(),
+  leave: () => resetNetwork('Left the squad.'),
+  ready: () => toggleReady(),
+  workshop: () => menuScreen('garage'),
+  buy: (request) => {
+    if (room && !isHost) safeSend(hostConn, { type: 'hubPurchase', request });
+    else applyHubPurchase(localId, request);
+  },
+  fit: (id, hand) => {
+    const item = HUB_CATALOG.find((item) => item.id === id);
+    if (!item || !ownsLicense(armory, id) || !nearStation(hubState, localId, item.vendor)) return;
+    if (item.vendor === 'parts') fitInto(item.slot, { kind: item.slot, id: item.item });
+    else
+      fitInto('equip' + (item.slot === 'equip2' ? 2 : hand), {
+        kind: item.slot === 'equip2' ? 'special' : 'hand',
+        id: item.item,
+      });
+  },
+  refit: (request) => {
+    if (room && !isHost) safeSend(hostConn, { type: 'refit', request });
+    else applyRefit(localPlayer()?.name || pilot, request);
+  },
+  careerUnlock: (request) => applyCareerAtStation(request),
+  careerReset: (request) => applyCareerAtStation(request, true),
+});
+function updateHub() {
+  const members = room ? roster : [me()];
+  if (!room || isHost) hubState = syncHubPlayers(hubState, members);
+  hubView.update({
+    state: hubState,
+    save: armory,
+    campaign,
+    build,
+    members,
+    localId,
+    room,
+    isHost,
+    connecting,
+    career,
+    pilot,
+  });
+}
+function persistArmory() {
+  if (room && !isHost) return;
+  soloArmory = armory;
+  write('iw-hub-armory', armory);
+}
+function applyCareerAtStation(request, reset = false) {
+  if (document.body.dataset.screen !== 'hub')
+    return 'Visit the station at Wake Anchorage to continue.';
+  const next = mutateCareerAtHub(
+    career,
+    { state: hubState, playerId: localId, pilot, playing, connecting, world },
+    request,
+    reset,
+  );
+  if (next === career)
+    return 'Upgrade unavailable. Check your points, prerequisites and station access.';
+  if (!write('iw-career-v1', next))
+    return 'Progress could not be saved. Allow browser storage and try again.';
+  career = next;
+  buildChanged();
+  return reset
+    ? 'Certifications reset. All spent points refunded.'
+    : 'Certification installed. Your next deployment uses this training.';
+}
+function applyHubPurchase(playerId, request) {
+  if (playing || world || (room && !isHost)) return;
+  const item = HUB_CATALOG.find((item) => item.id === request?.id);
+  if (!item || !nearStation(hubState, playerId, item.vendor)) return;
+  const next = purchaseAtStation(armory, hubState, playerId, request);
+  if (next === armory) {
+    if (playerId === localId) toast('Stock changed. Check credits and campaign requirements.');
+    return;
+  }
+  armory = next;
+  persistArmory();
+  if (room) broadcastLobby();
+  else updateHub();
+  toast(item.name + ' licensed for the squad.');
+}
+function hubDeployable(members = room ? roster : [me()]) {
+  if (members.some((p) => missingLicenses(armory, p.build).length)) {
+    toast(
+      'Visit Parts foundry / The arsenal to license fitted gear, or fit owned items before deployment.',
+    );
+    return false;
+  }
+  return true;
+}
+function tickHub(now, dt) {
+  updateHub();
+  const input = hubView.input();
+  if (isHost || !room) {
+    setHubInput(hubState, localId, input);
+    for (const p of hubState.players)
+      if (p.id !== localId && now - (p.inputAt || 0) > 600)
+        setHubInput(hubState, p.id, { x: 0, z: 0 });
+    stepHub(hubState, dt);
+    if (room && now - lastHubSnapshot >= 80) {
+      lastHubSnapshot = now;
+      broadcast({ type: 'hubState', hub: hubSnapshot(hubState) });
+    }
+  } else if (now - lastHubInput >= 50) {
+    lastHubInput = now;
+    safeSend(hostConn, { type: 'hubInput', input });
+  }
+}
+function registerRunPilot(name) {
+  if (!campaign) return;
+  const next = registerPilot(
+    campaign,
+    name,
+    roster.map((p) => p.name),
+  );
+  if (next === campaign) return;
+  campaign = next;
+  persistCampaign();
+  if (!m.practice && !m.destructible) m = campaignMission(campaign);
+  roster.forEach((p) => (p.ready = false));
+}
+function applyRefit(name, request, playerId = localId) {
+  if (
+    playing ||
+    deployment ||
+    world ||
+    !campaign ||
+    (room && !isHost) ||
+    !nearStation(hubState, playerId, 'supply')
+  )
+    return;
+  const next = installRefit(campaign, name, request);
+  if (next === campaign) return;
+  campaign = next;
+  persistCampaign();
+  m = campaignMission(campaign);
+  roster.forEach((p) => (p.ready = false));
+  if (room) broadcastLobby();
+  updateSquad();
+}
+function startDrill(id) {
+  if (room && !isHost) return;
+  m = id === 'cinderfall' ? planetMission(randomSeed()) : campaignRound(id, randomSeed());
+  m.practice = true;
+  m.contract = campaign?.contract || 'frontline';
+  roster.forEach((p) => (p.ready = false));
+  if (room) {
+    broadcastLobby();
+    menuScreen('home');
+    toast('Mission drill selected. Ready up in the squad lobby.');
+  } else $('#deploy').click();
+}
+function persistCampaign() {
+  if (room && !isHost) return;
+  soloCampaign = campaign;
+  write('iw-campaign', campaign);
+}
+function renderCampaign() {
+  $('#continueCampaign').hidden = !campaign;
+  $('#continueCampaign .js-continue-label').textContent = room ? 'Rejoin squad' : 'Continue';
+  $('#homeResumeDetail').textContent =
+    campaign?.runState === 'active'
+      ? 'Mission ' +
+        String(Math.min(9, campaign.level + 1)).padStart(2, '0') +
+        ' / 09 · Pick up where you left off.'
+      : 'Your campaign report is ready.';
+  $('#startMission').classList.toggle('primary', !campaign);
+  $('#startMission').classList.toggle('secondary', !!campaign);
+  $('#startMission').disabled = !!room && !isHost;
+  updateHub();
+  if (document.body.dataset.screen === 'hub' && hubView.station === 'mission')
+    campaignView.render({
+      campaign,
+      build,
+      saved,
+      members: room ? roster : [me()],
+      localId,
+      room,
+      isHost,
+      connecting,
+      canChoose: !room || isHost,
+      licensed: missingLicenses(armory, build).length === 0,
+      deploymentStats: combatStats(me()),
+    });
+}
+function openCampaign() {
+  if (!campaign) {
+    if (room && !isHost) {
+      toast('Waiting for the host to create a campaign.');
+      return;
+    }
+    campaign = newCampaign(randomSeed());
+    persistCampaign();
+  }
+  if (!room || isHost) {
+    const revision = campaign.revision,
+      changed = m.mode !== 'operation' || m.campaign?.id !== campaign.id;
+    if (changed) {
+      m = campaignMission(campaign, planetMission);
+      roster.forEach((p) => (p.ready = false));
+    }
+    for (const member of room ? roster : [me()]) registerRunPilot(member.name);
+    if (room && (changed || revision !== campaign.revision)) broadcastLobby();
+  }
+  campaignView.focusLanding(campaign);
+  menuScreen('campaign');
+  updateMission();
+  updateSquad();
+}
+function beginCampaign() {
+  if (room && !isHost) return;
+  const records = campaign?.records || {};
+  campaign = { ...newCampaign(randomSeed()), records };
+  persistCampaign();
+  m = campaignMission(campaign, planetMission);
+  for (const member of room ? roster : [me()]) registerRunPilot(member.name);
+  roster.forEach((p) => (p.ready = false));
+  hubState = syncHubPlayers(null, room ? roster : [me()]);
+  if (room) broadcastLobby();
+  openCampaign();
+}
+function toggleReady() {
+  if (
+    !room ||
+    playing ||
+    deployment ||
+    world ||
+    connecting ||
+    (m.campaign && campaign?.runState !== 'active')
+  )
+    return;
+  const p = localPlayer();
+  if (!p || (!p.ready && (!validBuild(build) || !hubDeployable([p])))) return;
+  if (isHost) {
+    p.ready = !p.ready;
+    broadcastLobby();
+  } else
+    safeSend(hostConn, {
+      type: 'ready',
+      ready: !p.ready,
+      campaignId: campaign?.id,
+      revision: campaign?.revision,
+    });
+}
+function settleCampaign(outcome) {
+  if (
+    !campaignMissionActive ||
+    !campaign ||
+    world?.mission.campaign?.id !== campaign.id ||
+    (room && !isHost)
+  )
+    return;
+  campaignMissionActive = false;
+  campaign = recordSortie(campaign, outcome, sortieReport(world, outcome));
+  persistCampaign();
+  armory = rewardHub(armory, campaign);
+  persistArmory();
+  m = campaignMission(campaign, planetMission);
+}
+function selectMode(mode, variant = 'level') {
+  if (room && !isHost) return;
+  m =
+    mode === 'destruction'
+      ? destructionMission(variant)
+      : mode === 'operation' && campaign
+        ? campaignMission(campaign, planetMission)
+        : mode === 'operation'
+          ? planetMission(randomSeed())
+          : mode === 'trial'
+            ? combatTrial()
+            : testPlatform();
+  if (room) {
+    roster.forEach((p) => (p.ready = false));
+    broadcastLobby();
+  }
+  updateMission();
+  updateSquad();
+}
+$('#startMission').onclick = () => {
+  if (!campaign) {
+    beginCampaign();
+    return;
+  }
+  modal(
+    '<h2>Start a new front?</h2><p>This resets the campaign saved in this browser. Your mechs and career upgrade trees stay in the armory.' +
+      (room ? ' Your squad will share the new board and ready up again.' : '') +
+      '</p><div class="dialog-actions"><button class="button primary" id="confirmCampaign">NEW CAMPAIGN</button><button class="button secondary" id="keepCampaign">CONTINUE CURRENT</button></div>',
+  );
+  $('#confirmCampaign').onclick = () => {
+    $('#modal').close();
+    beginCampaign();
+  };
+  $('#keepCampaign').onclick = () => {
+    $('#modal').close();
+    openCampaign();
+  };
+};
+function practice(mode) {
+  if (room && !isHost) {
+    menuScreen('campaign');
+    toast('The host chooses the practice mode. Mark ready when your squad is set.');
+    return;
+  }
+  selectMode(mode);
+  if (room) {
+    menuScreen('home');
+    toast('Practice selected. Mark ready in the squad lobby.');
+    return;
+  }
+  $('#deploy').click();
+}
+$('#trialMode').onchange = () => selectMode($('#trialMode').value);
+$('#startTrial').onclick = () => practice('trial');
+$('#testBuildTop').onclick = () => practice('sandbox');
+$('#startHost').onclick = () => {
+  if (!destructionLabEnabled) openCampaign();
+  hostRoom();
+};
+$('#startJoin').onclick = () => showJoin();
+$('#testThrusters').onclick = () => {
+  initAudio();
+  thrusterPreview = !thrusterPreview;
+  $('#testThrusters').textContent = thrusterPreview ? 'Stop boosters' : 'Test boosters';
+  $('#testThrusters').setAttribute('aria-pressed', String(thrusterPreview));
+};
+$('#weapon').innerHTML = Object.entries(RANGED)
+  .map(([id, v]) => `<option value="${id}">${v.name}</option>`)
+  .join('');
+$('#ability').innerHTML = Object.entries(ABILITIES)
+  .map(([id, v]) => `<option value="${id}">${v.name.toUpperCase()}</option>`)
+  .join('');
+function updateMission() {
+  $('#trialMode').value = m.destructible
+    ? 'destruction'
+    : m.mode === 'operation'
+      ? 'operation'
+      : m.mode === 'trial'
+        ? 'trial'
+        : 'sandbox';
+  $('#trialMode').disabled = !!room && !isHost;
+  $('#missionTitle').textContent = m.name;
+  $('#missionNumber').textContent = '';
+  $('#sectorLabel').textContent = m.destructible
+    ? 'EXPERIMENTAL 02 · DESTRUCTION'
+    : m.mode === 'operation'
+      ? `LEVEL ${m.sector} / ${m.estimatedMinutes || 15} MIN${m.practice ? ' / DRILL' : ''}`
+      : 'MECH WORKSHOP';
+  $('#reroll').hidden = true;
+}
+function updateSquad() {
+  const members = room ? roster : [me()];
+  $('#squadCount').textContent = `0${members.length} / 04`;
+  $('#squadSlots').innerHTML = Array.from({ length: 4 }, (_, i) => {
+    const p = members[i];
+    return p
+      ? `<div class="squad-slot filled"><span class="slot-icon" style="color:${escape(p.build.color)}">◈</span><span>${escape(p.name)}${p.id === localId ? ' / YOU' : ''}</span><em>${room ? (p.ready ? 'READY' : 'IN HANGAR') : 'AWAITING DEPLOYMENT'}</em></div>`
+      : `<button class="squad-slot" data-invite="1" aria-label="Invite a pilot"><span class="slot-icon">＋</span><span>OPEN SLOT</span></button>`;
+  }).join('');
+  $$('[data-invite]').forEach((b) => (b.onclick = () => (room ? copyRoom() : showHostInfo())));
+  $('#connectActions').hidden = !!room;
+  $('#roomActions').hidden = !room;
+  $('#host').disabled = connecting;
+  $('#join').disabled = connecting;
+  $('#networkStatus').textContent = connecting
+    ? 'Establishing squad connection…'
+    : room
+      ? `ROOM ${room} · ${isHost ? 'You are host' : 'Connected to host'} · ${members.filter((p) => p.ready).length}/${members.length} ready`
+      : 'Ready for a solo sortie or online co-op.';
+  const p = localPlayer(),
+    everyone = members.every((p) => p.ready);
+  $('#deploy').innerHTML = !room
+    ? m.destructible
+      ? 'DEPLOY ' + escape(m.name) + ' <span>↗</span>'
+      : m.mode === 'operation'
+        ? 'DEPLOY CINDERFALL <span>↗</span>'
+        : m.mode === 'trial'
+          ? 'START AI DUEL <span>↗</span>'
+          : 'ENTER TARGET RANGE <span>↗</span>'
+    : isHost
+      ? everyone
+        ? m.mode === 'operation'
+          ? 'DEPLOY SQUAD <span>↗</span>'
+          : m.mode === 'trial'
+            ? 'START COMBAT TRIAL <span>↗</span>'
+            : 'ENTER PLATFORM <span>↗</span>'
+        : p?.ready
+          ? 'WAITING FOR SQUAD'
+          : 'MARK READY <span>✓</span>'
+      : p?.ready
+        ? 'UNREADY'
+        : 'MARK READY <span>✓</span>';
+  $('#deploy').disabled =
+    connecting || !validBuild(build) || (!!room && isHost && p?.ready && !everyone);
+  $('#pilotLabel').textContent = room && p ? p.name : pilot;
+  document.body.dataset.room = room ? 'true' : 'false';
+  renderCampaign();
+}
+function showHostInfo() {
+  modal(
+    '<h2>Host a squad</h2><p>Create a room, share its invite, and choose your mechs. Everyone marks ready before the host deploys. No account needed.</p><p>Keep the host’s tab open during the mission. Direct browser connections may be blocked by restrictive networks; try a different network if a connection fails.</p><button class="button primary" id="confirmHost">Create squad ↗</button>',
+  );
+  $('#confirmHost').onclick = () => {
+    $('#modal').close();
+    hostRoom();
+  };
+}
+function createPeer(id) {
+  return new Peer(id, {
+    debug: 0,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+    },
+  });
+}
+function resetNetwork(message) {
+  cancelDeployment();
+  resetSound();
+  $('#modal').close();
+  if (document.pointerLockElement) document.exitPointerLock();
+  clearTimeout(joinTimeout);
+  const old = peer;
+  peer = null;
+  hostConn = null;
+  connections.clear();
+  room = '';
+  isHost = false;
+  connecting = false;
+  localId = 'local';
+  roster = [];
+  old?.destroy();
+  campaignMissionActive = false;
+  campaign = soloCampaign;
+  armory = soloArmory;
+  hubState = syncHubPlayers(null, [me()]);
+  hubView.stop();
+  hubView.close();
+  if (campaign) m = campaignMission(campaign, planetMission);
+  if (playing || world) {
+    playing = false;
+    world = null;
+    $('#game').hidden = true;
+    $('#hangar').hidden = false;
+    sceneFlow.cut();
+  }
+  if (document.body.dataset.screen === 'hub' && !campaign) menuScreen('home');
+  updateSquad();
+  updateMission();
+  if (message) toast(message);
+}
+function networkError(error) {
+  if (!peer) return;
+  if (error.type === 'peer-unavailable')
+    resetNetwork('Room not found. Check the code and that the host is online.');
+  else if (connecting) resetNetwork('Could not connect. Check your network and try again.');
+  else if (error.type === 'unavailable-id')
+    resetNetwork('Room code in use. Please create a new room.');
+  else toast('Connection warning. If your squad disconnects, create a new room.');
+}
+async function hostRoom() {
+  if (connecting || room) return;
+  if (!campaign && !destructionLabEnabled) openCampaign();
+  if (!window.Peer) {
+    toast('Online library did not load. Reload the page to try again.');
+    return;
+  }
+  connecting = true;
+  updateSquad();
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789',
+    bytes = crypto.getRandomValues(new Uint8Array(6)),
+    code = [...bytes].map((b) => chars[b % chars.length]).join('');
+  try {
+    peer = createPeer(ROOM_PROTOCOL + code);
+  } catch {
+    resetNetwork('This browser cannot establish an online connection.');
+    return;
+  }
+  const p = peer;
+  p.on('error', networkError);
+  joinTimeout = setTimeout(() => {
+    if (connecting) resetNetwork('Signaling server unavailable. Try again or deploy solo.');
+  }, 15000);
+  p.on('open', (id) => {
+    if (peer !== p) return;
+    clearTimeout(joinTimeout);
+    if (room && isHost) {
+      connecting = false;
+      updateSquad();
+      return;
+    }
+    isHost = true;
+    room = code;
+    localId = id;
+    connecting = false;
+    roster = [me()];
+    registerRunPilot(pilot);
+    menuScreen(m.destructible ? 'home' : 'campaign');
+    updateSquad();
+    updateMission();
+    toast('Room ' + room + ' ready. Copy an invite for your squad.');
+  });
+  p.on('disconnected', () => {
+    if (peer === p && !p.destroyed) {
+      toast('Room discovery interrupted. Reconnecting…');
+      p.reconnect();
+    }
+  });
+  p.on('connection', (conn) => {
+    let accepted = false,
+      verifying = false,
+      rate = 0,
+      rateAt = Date.now();
+    conn.on('open', () => {
+      if (world || playing || roster.length >= 4) {
+        safeSend(conn, {
+          type: 'reject',
+          reason: playing
+            ? 'Mission in progress. Join after the squad returns.'
+            : 'This squad is full (4 pilots).',
+        });
+        setTimeout(() => conn.close(), 500);
+        return;
+      }
+      const timeout = setTimeout(() => {
+        if (!accepted) conn.close();
+      }, 8000);
+      conn.on('data', async (data) => {
+        if (!data || typeof data !== 'object') return;
+        if (Date.now() - rateAt > 1000) {
+          rate = 0;
+          rateAt = Date.now();
+        }
+        if (++rate > 100) return;
+        if (data.type === 'hello' && !accepted && !verifying) {
+          verifying = true;
+          const assigned = {
+            callsign: validCallsign(data.callsign) ? data.callsign : createCallsign(),
+          };
+          if (roster.some((member) => member.name === assigned.callsign))
+            assigned.callsign = createCallsign();
+          if (peer !== p || !conn.open) return;
+          if (world || playing || roster.length >= 4) {
+            safeSend(conn, { type: 'reject', reason: 'The squad is full or is already testing.' });
+            setTimeout(() => conn.close(), 500);
+            return;
+          }
+          accepted = true;
+          clearTimeout(timeout);
+          connections.set(conn.peer, conn);
+          const memberBuild = cleanBuild(data.build);
+          roster.push({
+            id: conn.peer,
+            name: assigned.callsign,
+            build: memberBuild,
+            progression: cleanDeploymentProgression(data.progression, memberBuild.chassis),
+            ready: false,
+          });
+          registerRunPilot(assigned.callsign);
+          broadcastLobby();
+          toast('A pilot joined your squad.');
+          return;
+        }
+        if (!accepted) return;
+        const member = roster.find((x) => x.id === conn.peer);
+        if (!member) return;
+        if (data.type === 'deployment-ready') {
+          if (deployment?.gate?.acknowledge(conn.peer, data.ticket)) tryLaunchDeployment();
+          return;
+        }
+        if (data.type === 'deployment-failed' && data.ticket === deployment?.ticket) {
+          abortDeployment('A squad member could not prepare the battlefield. Try deploying again.');
+          return;
+        }
+        if (data.type === 'input' && playing) {
+          setInput(world, conn.peer, data.input);
+        } else if (data.type === 'hubInput' && !world) {
+          setHubInput(hubState, conn.peer, data.input);
+          const hp = hubState.players.find((p) => p.id === conn.peer);
+          if (hp) hp.inputAt = performance.now();
+        } else if (data.type === 'hubPurchase' && !world) {
+          applyHubPurchase(conn.peer, data.request);
+        } else if (data.type === 'ready' && !world) {
+          member.ready =
+            !!data.ready &&
+            data.campaignId === campaign?.id &&
+            data.revision === campaign?.revision &&
+            validBuild(member.build) &&
+            (!m.campaign || missingLicenses(armory, member.build).length === 0);
+          broadcastLobby();
+        } else if (data.type === 'refit' && !world) {
+          applyRefit(member.name, data.request, conn.peer);
+        } else if (data.type === 'loadout' && !world) {
+          member.build = cleanBuild(data.build);
+          member.progression = cleanDeploymentProgression(data.progression, member.build.chassis);
+          member.ready = false;
+          broadcastLobby();
+        }
+      });
+    });
+    const gone = () => {
+      if (!accepted || peer !== p) return;
+      accepted = false;
+      connections.delete(conn.peer);
+      roster = roster.filter((x) => x.id !== conn.peer);
+      if (world) world.players = world.players.filter((x) => x.id !== conn.peer);
+      if (deployment)
+        abortDeployment('Squad link changed during loading. Ready up and deploy again.');
+      broadcastLobby();
+      toast('A pilot disconnected.');
+    };
+    conn.on('close', gone);
+    conn.on('error', gone);
+  });
+}
+async function joinRoom(code) {
+  code = code.trim().toUpperCase();
+  if (!/^[A-Z2-9]{6}$/.test(code)) {
+    toast('Enter the six-character room code.');
+    return;
+  }
+  if (connecting || room) return;
+  if (!window.Peer) {
+    toast('Online library did not load. Reload the page.');
+    return;
+  }
+  connecting = true;
+  updateSquad();
+  try {
+    peer = createPeer();
+  } catch {
+    resetNetwork('This browser does not support online connections.');
+    return;
+  }
+  const p = peer;
+  p.on('error', networkError);
+  joinTimeout = setTimeout(() => {
+    if (connecting)
+      resetNetwork('Connection timed out. Check the room code or try another network.');
+  }, 18000);
+  p.on('open', (id) => {
+    if (peer !== p) return;
+    localId = id;
+    hostConn = p.connect(ROOM_PROTOCOL + code, { reliable: true, serialization: 'binary' });
+    const conn = hostConn;
+    conn.on('open', () =>
+      safeSend(conn, {
+        type: 'hello',
+        callsign: pilot,
+        build: cleanBuild(build),
+        progression: progressionForBuild(),
+      }),
+    );
+    conn.on('data', (data) => {
+      if (peer !== p || !data || typeof data !== 'object') return;
+      if (data.type === 'reject') {
+        resetNetwork(data.reason);
+        return;
+      }
+      if (data.type === 'lobby') {
+        clearTimeout(joinTimeout);
+        const firstJoin = !room,
+          previousMode = m.mode,
+          previousPractice = !!m.practice;
+        room = code;
+        connecting = false;
+        roster = data.roster;
+        m = data.mission;
+        campaign = cleanCampaign(data.campaign);
+        armory = cleanHubSave(data.armory);
+        if (data.hub) hubState = data.hub;
+        if (
+          !playing &&
+          !deployment &&
+          (firstJoin || previousMode !== m.mode || previousPractice !== !!m.practice)
+        ) {
+          campaignView.focusLanding(campaign);
+          menuScreen(m.mode === 'operation' && !m.practice ? 'campaign' : 'home');
+        }
+        receivedAt = performance.now();
+        updateSquad();
+        updateMission();
+        if (($('#modal').open || feedback?.isOpen()) && $('#joinCode')) $('#modal').close();
+      }
+      if (data.type === 'hubState' && !world) {
+        hubState = data.hub;
+        receivedAt = performance.now();
+      }
+      if (data.type === 'start' && typeof data.ticket === 'string') {
+        world = data.world;
+        m = world.mission;
+        receivedAt = performance.now();
+        startView(data.ticket);
+      }
+      if (data.type === 'combat-live') enterCombat(data.ticket);
+      if (data.type === 'state' && playing) {
+        world = { ...data.world, mission: world.mission };
+        receivedAt = performance.now();
+        if (world.status !== 'playing') finish();
+      }
+      if (data.type === 'return') {
+        returnToHangar(false);
+        m = data.mission;
+        roster = data.roster;
+        campaign = cleanCampaign(data.campaign);
+        armory = cleanHubSave(data.armory);
+        hubState = data.hub || syncHubPlayers(null, roster);
+        campaignView.focusLanding(campaign);
+        menuScreen(m.destructible ? 'home' : campaign ? 'campaign' : 'home');
+        updateSquad();
+        updateMission();
+        toast('Squad returned to Wake Anchorage.');
+      }
+    });
+    conn.on('close', () => {
+      if (peer === p)
+        resetNetwork('Host disconnected. Your saved mechs are safe; create or join another room.');
+    });
+    conn.on('error', () => {
+      if (peer === p) resetNetwork('Squad connection lost. Try another network or room.');
+    });
+  });
+}
+function showJoin(code = '') {
+  modal(
+    `<h2>Join a squad</h2><p>Enter your host’s six-character room code. Join the host’s campaign board, choose your mech and special, then mark ready. Everyone deploys to the same battlefield.</p><label class="small-label" for="joinCode">Room code</label><input class="join-code" id="joinCode" maxlength="6" autocomplete="off" spellcheck="false" value="${escape(code)}" placeholder="ABC234"><button class="button primary full" id="confirmJoin">Join squad ↗</button>`,
+  );
+  $('#joinCode').focus();
+  $('#confirmJoin').onclick = () => {
+    joinRoom($('#joinCode').value);
+  };
+  $('#joinCode').onkeydown = (e) => {
+    if (e.key === 'Enter') $('#confirmJoin').click();
+  };
+}
+async function copyRoom() {
+  if (!room) return;
+  const link = new URL(location.href);
+  link.search = '';
+  link.searchParams.set('room', room);
+  if (destructionLabEnabled) link.searchParams.set('lab', 'destruction');
+  link.hash = '';
+  try {
+    await navigator.clipboard.writeText(link.href);
+    toast('Invite copied. Room code: ' + room);
+  } catch {
+    modal(
+      `<h2>INVITE YOUR SQUAD</h2><p>Room code: <strong>${room}</strong></p><input aria-label="Room invite URL" value="${escape(link.href)}" readonly id="inviteUrl"><p>Select and copy this invite link.</p>`,
+    );
+    $('#inviteUrl').select();
+  }
+}
+$('#host').onclick = hostRoom;
+$('#join').onclick = () => showJoin();
+$('#copyRoom').onclick = copyRoom;
+$('#leave').onclick = () => resetNetwork('Left the squad.');
+$('#reroll').onclick = () => {
+  if (room && !isHost) return;
+  m = testPlatform();
+  if (room) {
+    roster.forEach((p) => (p.ready = false));
+    broadcastLobby();
+  }
+  updateMission();
+  toast('New operation generated: ' + m.name);
+};
+$('#deploy').onclick = async () => {
+  if (playing || deployment) return;
+  if (m.campaign && (!hubDeployable() || !nearStation(hubState, localId, 'mission'))) return;
+  if (m.campaign && campaign?.runState !== 'active') return;
+  if (connecting || !validBuild(build) || (room && isHost && !roster.length)) return;
+  if (!initBattle($('#battle'))) {
+    toast(graphicsError());
+    return;
+  }
+  initAudio();
+  if (!room) {
+    localId = 'local';
+    if (campaign && m.mode === 'operation' && !m.practice)
+      m = campaignMission(campaign, planetMission);
+    world = newWorld(m, [me()]);
+    startView();
+    return;
+  }
+  const p = localPlayer();
+  if (!p) return;
+  if (isHost) {
+    if (roster.every((p) => p.ready && validBuild(p.build))) {
+      if (campaign && m.mode === 'operation' && !m.practice)
+        m = campaignMission(campaign, planetMission);
+      world = newWorld(m, roster);
+      startView();
+    } else {
+      p.ready = true;
+      broadcastLobby();
+    }
+  } else
+    safeSend(hostConn, {
+      type: 'ready',
+      ready: !p.ready,
+      campaignId: campaign?.id,
+      revision: campaign?.revision,
+    });
+};
+const {
+  cancelDeployment,
+  abortDeployment,
+  enterCombat,
+  tryLaunchDeployment,
+  startView,
+  updateInsertion,
+} = createDeploymentController({
+  readSession: () => ({ world, localId, isHost, room }),
+  readPending: () => deployment,
+  writePending: (value) => {
+    deployment = value;
+  },
+  onBegin() {
+    hubView.stop();
+    hubView.close();
+    playing = false;
+    campaignMissionActive = false;
+    endShown = false;
+    thrusterPreview = false;
+  },
+  onCombat(current) {
+    campaignMissionActive = !!current.mission.campaign;
+    lastTick = receivedAt = performance.now();
+    lastSnapshot = 0;
+    playing = true;
+  },
+  clearInputs,
+  captureMouse() {
+    if (!feedback?.isOpen() && matchMedia('(pointer:fine)').matches) mouseLook.capture();
+  },
+  stopPreviewSound: () => updatePreviewSound(previewBuild(), performance.now() / 1000, false),
+  sendToHost: (data) => safeSend(hostConn, data),
+  broadcast,
+  resetNetwork,
+  returnToHangar,
+  toast,
+  sceneFlow,
+});
+$('.deployment-cancel').onclick = () => abortDeployment();
+window.addEventListener('keydown', (event) => {
+  if (!deployment || feedback?.isOpen()) return;
+  if (event.code === 'Escape') {
+    event.preventDefault();
+    abortDeployment();
+  }
+});
 
+function returnToHangar(send = true) {
+  resetSound();
+  cancelDeployment();
+  sceneFlow.cut();
+  settleCareer();
+  const destructionExit = !!world?.siege;
+  if (document.pointerLockElement) document.exitPointerLock();
+  if (campaignMissionActive)
+    settleCampaign(
+      world?.status === 'won' ? 'victory' : world?.status === 'lost' ? 'defeat' : 'withdrawal',
+    );
+  campaignMissionActive = false;
+  playing = false;
+  world = null;
+  clearInputs();
+  $('#game').hidden = true;
+  $('#hangar').hidden = false;
+  menuScreen(destructionExit ? 'home' : campaign ? 'campaign' : room ? 'home' : 'garage');
+  $('#modal').close();
+  if (isHost || !room) {
+    roster.forEach((p) => (p.ready = false));
+  }
+  hubState = syncHubPlayers(null, room ? roster : [me()]);
+  hubView.stop();
+  hubView.close();
+  if (isHost && send)
+    broadcast({ type: 'return', mission: m, roster, campaign, armory, hub: hubSnapshot(hubState) });
+  updateMission();
+  updateSquad();
+}
+function finish() {
+  if (endShown || !world) return;
+  endShown = true;
+  if (isHost) broadcast({ type: 'state', world: snapshot(world, false) });
+  const won = world.status === 'won';
+  const careerReward = settleCareer();
+  settleCampaign(won ? 'victory' : 'defeat');
+  if (world.mission.mode === 'trial') {
+    modal(
+      `<p class="eyebrow orange">COMBAT TRIAL</p><h2>${won ? 'HOSTILE NEUTRALIZED.' : 'MECH DISABLED.'}</h2><p>${won ? 'The AI mech is down. Try another loadout or run the trial again.' : 'Boost through its firing line, close in between bursts, or equip a shield or repair system.'}</p><div class="end-stats"><div><b>${world.kills} / 1</b><span>HOSTILE DEFEATED</span></div><div><b>${Math.floor(world.time)}s</b><span>COMBAT TIME</span></div></div>${isHost || !room ? '<div class="dialog-actions"><button class="button primary" id="retryTrial">FIGHT AGAIN</button><button class="button secondary" id="trialWorkshop">WORKSHOP</button></div>' : '<p>Waiting for the host to restart or return.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'}`,
+    );
+    if ($('#retryTrial'))
+      $('#retryTrial').onclick = () => {
+        world = newWorld(m, room ? roster : [me()]);
+        startView();
+      };
+    if ($('#trialWorkshop'))
+      $('#trialWorkshop').onclick = () => {
+        returnToHangar();
+        menuScreen('garage');
+      };
+    if ($('#leaveResult')) $('#leaveResult').onclick = () => resetNetwork();
+    return;
+  }
+  if (world.sortie) {
+    modal(
+      debriefMarkup(sortieReport(world, won ? 'victory' : 'defeat')) +
+        (careerReward ? `<p class="career-reward" role="status">${escape(careerReward)}</p>` : '') +
+        (isHost || !room
+          ? '<button class="button primary" id="returnHangar">RETURN TO ANCHORAGE ↗</button>'
+          : '<p>Waiting for the host to return the squad.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'),
+    );
+    if ($('#returnHangar')) $('#returnHangar').onclick = () => returnToHangar();
+    if ($('#leaveResult')) $('#leaveResult').onclick = () => resetNetwork();
+    return;
+  }
+  modal(
+    `<p class="eyebrow orange">OPERATION ${escape(world.mission.name)}</p><h2>${won ? 'EXTRACTION COMPLETE.' : 'SQUAD LOST. REGROUP.'}</h2><p>${won ? (world.siege ? 'Breakwater breached. Refinery ruptured. Command collapsed. Squad extracted.' : 'Reactor destroyed. Squad extracted. Cinderfall is complete.') : 'Your loadouts are safe. Try cover, a repair system, or a different squad composition.'}</p><div class="end-stats"><div><b>${world.kills}</b><span>HOSTILES CLEARED</span></div><div><b>${world.cleared}/${world.mission.zones.length}</b><span>OBJECTIVES COMPLETE</span></div><div><b>${Math.floor(world.time / 60)}:${String(Math.floor(world.time % 60)).padStart(2, '0')}</b><span>MISSION TIME</span></div></div>${isHost || !room ? '<button class="button primary" id="returnHangar">RETURN TO ANCHORAGE ↗</button>' : '<p>Waiting for the host to return the squad to Wake Anchorage.</p><button class="button secondary" id="leaveResult">LEAVE SQUAD</button>'}`,
+  );
+  if ($('#returnHangar')) $('#returnHangar').onclick = () => returnToHangar();
+  if ($('#leaveResult'))
+    $('#leaveResult').onclick = () => {
+      $('#modal').close();
+      resetNetwork();
+    };
+}
+$('#exitGame').onclick = () => {
+  if (world?.mission.mode === 'sandbox' && !room) {
+    returnToHangar();
+    menuScreen('garage');
+    return;
+  }
+  const destination = world?.siege ? 'HANGAR' : 'ANCHORAGE',
+    place = world?.siege ? 'the lab lobby' : 'Wake Anchorage';
+  modal(
+    `<h2>RETURN TO ${destination}?</h2><p>${isHost ? 'The whole squad will return to ' + place + '.' : room ? 'You will leave the squad. The other pilots can continue.' : world?.siege ? 'Return to the lab lobby. Your campaign progress is unchanged.' : 'Withdraw to the campaign board. Your mechs and campaign progress are saved.'}</p><div class="dialog-actions"><button id="confirmExit" class="button primary">RETURN TO ${destination}</button><button id="stay" class="button secondary">KEEP PLAYING</button></div>`,
+  );
+  $('#stay').onclick = () => $('#modal').close();
+  $('#confirmExit').onclick = () => {
+    if (room && !isHost) {
+      $('#modal').close();
+      resetNetwork();
+    } else {
+      returnToHangar();
+    }
+  };
+};
+$('#saveMech').onclick = () => {
+  if (!validBuild(build)) return;
+  const index = saved.findIndex((b) => buildKey(b) === buildKey(build));
+  if (index >= 0) saved[index] = cleanBuild(build);
+  else if (saved.length < 12) saved.push(cleanBuild(build));
+  else {
+    toast('12 save slots used. Delete a mech in Saved Mechs first.');
+    return;
+  }
+  if (write('iw-builds', saved)) toast(build.name + ' saved to this browser.');
+};
+function downloadBuilds() {
+  const blob = new Blob(
+      [
+        JSON.stringify(
+          { game: 'IRONWAKE', version: 6, mechs: saved.length ? saved : [cleanBuild(build)] },
+          null,
+          2,
+        ),
+      ],
+      { type: 'application/json' },
+    ),
+    url = URL.createObjectURL(blob),
+    a = document.createElement('a');
+  a.href = url;
+  a.download = 'ironwake-mechs.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function showBuilds() {
+  modal(
+    `<div class="armory-heading"><div><h2>Saved machines</h2></div><span><b>${String(saved.length).padStart(2, '0')}</b> of 12</span></div><p class="armory-intro">Your designs, ready for the next drop. Loading a build clears squad readiness.</p><div class="armory-grid">${
+      saved.length
+        ? saved
+            .map((b, i) => {
+              const stats = mechStats(b),
+                frame = chassisFor(b);
+              return `<article class="build-card"><span class="armory-machine" style="--frame-paint:${b.color}">${chassisIcon(frame)}</span><div class="armory-card-meta"><small>${frame.name} / ${frame.size || stats.weightClass}</small><h3>${escape(b.name)}</h3><p>${b.equipment
+                .filter(Boolean)
+                .map((id) => EQUIPMENT[id].name.split(' / ').at(-1))
+                .join(
+                  ' · ',
+                )}</p></div><div class="armory-stats"><span><b>${stats.hp}</b> Armor</span><span><b>${stats.weight}<small>t</small></b> Mass</span><span><b>${Math.round(stats.speed * stats.boost)}</b> Boost</span></div><div class="armory-actions"><button class="button primary" data-load="${i}">Load machine ↗</button><button class="armory-delete text-button" data-delete="${i}" aria-label="Delete ${escape(b.name)}">Delete</button></div></article>`;
+            })
+            .join('')
+        : `<div class="armory-empty"><span>${chassisIcon(chassisFor(build))}</span><h3>No saved machines</h3><p>Save a machine in Assembly to keep it here.</p><button class="button primary" id="armoryWorkshop">Open assembly ↗</button></div>`
+    }</div><div class="armory-footer"><span>Stored on this device. Export a backup to take your designs with you.</span><div class="dialog-actions"><button id="exportBuilds" class="button secondary">Export ↓</button><button id="importBuilds" class="button secondary">Import ↑</button><input type="file" id="importFile" accept="application/json,.json" hidden></div></div>`,
+  );
+  if ($('#armoryWorkshop'))
+    $('#armoryWorkshop').onclick = () => {
+      $('#modal').close();
+      menuScreen('garage');
+    };
+  $$('[data-load]').forEach(
+    (b) =>
+      (b.onclick = () => {
+        build = cleanBuild(saved[+b.dataset.load]);
+        $('#mechName').textContent = build.name;
+        buildChanged();
+        $('#modal').close();
+        toast('Loaded ' + build.name);
+      }),
+  );
+  $$('[data-delete]').forEach(
+    (b) =>
+      (b.onclick = () => {
+        b.textContent = 'Confirm delete';
+        b.setAttribute('aria-label', 'Confirm deletion of ' + saved[+b.dataset.delete].name);
+        b.classList.add('confirm-delete');
+        b.onclick = () => {
+          saved.splice(+b.dataset.delete, 1);
+          write('iw-builds', saved);
+          showBuilds();
+        };
+      }),
+  );
+  $('#exportBuilds').onclick = downloadBuilds;
+  $('#importBuilds').onclick = () => $('#importFile').click();
+  $('#importFile').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 100000) {
+      toast('File too large. Import an Ironwake mech backup.');
+      return;
+    }
+    try {
+      const data = JSON.parse(await file.text());
+      if (
+        data.game !== 'IRONWAKE' ||
+        !Array.isArray(data.mechs) ||
+        !data.mechs.every((b) => b && typeof b === 'object')
+      )
+        throw Error();
+      const incoming = data.mechs.slice(0, 12 - saved.length).map(cleanBuild);
+      saved.push(...incoming);
+      write('iw-builds', saved);
+      showBuilds();
+      toast(incoming.length + ' mechs imported.');
+    } catch {
+      toast('Invalid file. Choose an exported Ironwake mech backup.');
+    }
+  };
+}
+const showManual = createManual({ modal, syncImpactMode });
+$$('[data-view]').forEach(
+  (b) =>
+    (b.onclick = () => {
+      if (b.dataset.view === 'builds') showBuilds();
+      else if (b.dataset.view === 'manual') showManual();
+      else $('#modal').close();
+    }),
+);
+$('#controlsLink').onclick = showManual;
+$('#gameHelp').onclick = showManual;
+function syncImpactMode() {
+  const full = impactMode() === 'full';
+  $('#impactMode').textContent = 'FX: ' + (full ? 'Full' : 'Reduced');
+  $('#impactMode').setAttribute('aria-pressed', String(full));
+  $('#impactMode').setAttribute(
+    'aria-label',
+    'Impact effects: ' + impactMode() + '. Click to switch.',
+  );
+  if ($('#manualImpactMode'))
+    $('#manualImpactMode').textContent = 'IMPACT EFFECTS: ' + impactMode().toUpperCase() + ' [V]';
+}
+$('#impactMode').onclick = () => {
+  toggleImpactMode();
+  syncImpactMode();
+  toast('Impact effects: ' + impactMode());
+};
+syncImpactMode();
+const gameKeys = [
+  'KeyW',
+  'KeyA',
+  'KeyS',
+  'KeyD',
+  'KeyQ',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Space',
+  'KeyE',
+  'ShiftLeft',
+  'ShiftRight',
+  'Tab',
+  'KeyU',
+  'KeyF',
+  'KeyB',
+  'Digit1',
+  'Digit2',
+  'Digit3',
+  'Numpad1',
+  'Numpad2',
+  'Numpad3',
+];
+function toggleFieldInventory() {
+  if (!playing || $('#modal').open || feedback?.isOpen() || !sortieHud.key('KeyB')) return false;
+  if (document.pointerLockElement) document.exitPointerLock();
+  clearInputs();
+  $('#combatMenu').open = false;
+  $('#gameFieldInventory').setAttribute('aria-expanded', String(sortieHud.inventoryOpen));
+  $('#battle').focus({ preventScroll: true });
+  return true;
+}
+$('#gameFieldInventory').onclick = toggleFieldInventory;
+$('#combatMenu').addEventListener('toggle', () => {
+  if ($('#combatMenu').open) {
+    if (document.pointerLockElement) document.exitPointerLock();
+    clearInputs();
+  }
+});
+window.addEventListener('keydown', (e) => {
+  if (
+    !playing ||
+    $('#modal').open ||
+    feedback?.isOpen() ||
+    $('#combatMenu').open ||
+    e.target.closest('button,summary,input,select,textarea,a,[contenteditable]')
+  )
+    return;
+  if (e.code === 'Tab' && e.target !== $('#battle')) return;
+  if (gameKeys.includes(e.code)) e.preventDefault();
+  if (!e.repeat && sortieHud.key(e.code)) {
+    if (['KeyB', 'KeyU'].includes(e.code)) {
+      if (document.pointerLockElement) document.exitPointerLock();
+      clearInputs();
+    }
+    return;
+  }
+  keys[e.code] = true;
+  syncStrafe();
+  if (!e.repeat && e.code === 'KeyH') {
+    showManual();
+    return;
+  }
+  if (!e.repeat && e.code === 'KeyE') pressAbility = true;
+  if (!e.repeat && ['ShiftLeft', 'ShiftRight'].includes(e.code)) pressDash = true;
+  if (e.code === 'Tab' && !['sandbox', 'trial'].includes(world?.mission.mode))
+    $('#levelMapPanel').hidden = false;
+  if (!e.repeat && e.code === 'KeyV') $('#impactMode').click();
+  if (!e.repeat && e.code === 'KeyM') $('#soundToggle').click();
+});
+window.addEventListener('keyup', (e) => {
+  keys[e.code] = false;
+  syncStrafe();
+  if (e.code === 'Tab') $('#levelMapPanel').hidden = true;
+});
+function clearInputs() {
+  keys = {};
+  mouse.strafe = false;
+  setStrafe(false);
+  mouseLook.reset();
+  $('#levelMapPanel').hidden = true;
+  mouse.left = false;
+  mouse.right = false;
+  view.aiming = false;
+  touch.left = false;
+  touch.right = false;
+  touch.fly = false;
+  touch.x = touch.y = 0;
+  pressAbility = pressMelee = pressDash = false;
+  handPress.left = handPress.right = false;
+}
+window.addEventListener('blur', clearInputs);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) clearInputs();
+});
+const mouseLook = createMouseLook({
+  canvas: $('#battle'),
+  active: () =>
+    playing &&
+    !($('#modal').open || feedback?.isOpen()) &&
+    !$('#combatMenu').open &&
+    $('#levelMapPanel').hidden,
+  look,
+  onLock: (locked) => (view.locked = locked),
+  onRelease: clearInputs,
+  onFallback: () => toast('Mouse aims without clicking. Move to the screen edge to keep turning.'),
+});
+function syncStrafe() {
+  setStrafe(!!keys.KeyQ || !!mouse.strafe);
+}
+function syncMouse(e) {
+  Object.assign(mouse, mouseButtons(e.buttons));
+  mouse.strafe = !!(e.buttons & 4);
+  view.aiming = false;
+  syncStrafe();
+}
+$('#battle').addEventListener('mousedown', (e) => {
+  if (!playing || $('#modal').open || feedback?.isOpen()) return;
+  initAudio();
+  if (e.button < 0 || e.button > 2) return;
+  e.preventDefault();
+  syncMouse(e);
+  if (e.button === 0 || e.button === 2) handPress[e.button === 0 ? 'left' : 'right'] = true;
+  mouseLook.capture();
+});
+window.addEventListener('mouseup', (e) => {
+  if (playing) syncMouse(e);
+});
+$('#battle').addEventListener('auxclick', (e) => {
+  if (e.button === 1) e.preventDefault();
+});
+$('#battle').addEventListener('pointercancel', clearInputs);
+$('#battle').addEventListener('contextmenu', (e) => e.preventDefault());
+$('#abilityButton').onclick = () => (pressAbility = true);
+$('#dashButton').onclick = () => (pressDash = true);
+$('#mapToggle').onclick = () => {
+  if (!['sandbox', 'trial'].includes(world?.mission.mode))
+    $('#levelMapPanel').hidden = !$('#levelMapPanel').hidden;
+};
+$('#flightButton').addEventListener('pointerdown', (e) => {
+  e.target.setPointerCapture(e.pointerId);
+  touch.fly = true;
+});
+$('#flightButton').addEventListener('pointerup', () => (touch.fly = false));
+$('#flightButton').addEventListener('pointercancel', () => (touch.fly = false));
+function syncPilotVoice() {
+  const on = pilotVoiceEnabled();
+  $('#voiceToggle').textContent = 'VOICE ' + (on ? 'ON' : 'OFF');
+  $('#voiceToggle').setAttribute('aria-pressed', String(on));
+}
+$('#voiceToggle').onclick = () => {
+  initAudio();
+  togglePilotVoice();
+  syncPilotVoice();
+};
+syncPilotVoice();
+installPilotVoicePicker({
+  openModal: modal,
+  selected: selectedPilotVoice,
+  select: selectPilotVoice,
+  preview: previewPilotVoice,
+  stop: stopPilotVoice,
+  enabled: pilotVoiceEnabled,
+});
+$('#soundToggle').onclick = () => {
+  $('#soundToggle').textContent = toggleSound() ? 'SOUND OFF [M]' : 'SOUND ON [M]';
+};
+let joystickPointer = null;
+$('#joystick').addEventListener('pointerdown', (e) => {
+  joystickPointer = e.pointerId;
+  e.target.setPointerCapture(e.pointerId);
+  updateStick(e);
+});
+$('#joystick').addEventListener('pointermove', (e) => {
+  if (joystickPointer === e.pointerId) updateStick(e);
+});
+function updateStick(e) {
+  const r = $('#joystick').getBoundingClientRect(),
+    x = e.clientX - r.left - r.width / 2,
+    y = e.clientY - r.top - r.height / 2,
+    l = Math.max(40, Math.hypot(x, y));
+  touch.x = x / l;
+  touch.y = y / l;
+  $('#joystick i').style.transform = `translate(${touch.x * 32}px,${touch.y * 32}px)`;
+}
+function releaseStick() {
+  joystickPointer = null;
+  touch.x = touch.y = 0;
+  $('#joystick i').style.transform = '';
+}
+$('#joystick').addEventListener('pointerup', releaseStick);
+$('#joystick').addEventListener('pointercancel', releaseStick);
+for (const [id, hand] of [
+  ['touchFire', 'left'],
+  ['touchMelee', 'right'],
+  ['leftHandButton', 'left'],
+  ['rightHandButton', 'right'],
+]) {
+  const button = $('#' + id);
+  button.addEventListener('contextmenu', (e) => e.preventDefault());
+  button.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    initAudio();
+    button.setPointerCapture(e.pointerId);
+    touch[hand] = true;
+    handPress[hand] = true;
+  });
+  for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
+    button.addEventListener(event, () => (touch[hand] = false));
+}
 
-$('#testWeapons').onclick=()=>{initAudio();equipmentPreview=!equipmentPreview;$('#testWeapons').textContent=equipmentPreview?'Stop equipment':'Test equipment';$('#testWeapons').setAttribute('aria-pressed',String(equipmentPreview));};
+function getInput() {
+  const p = world?.players.find((p) => p.id === localId);
+  if (!p || $('#modal').open || feedback?.isOpen() || $('#combatMenu').open)
+    return { x: 0, y: 0, fire: false };
+  if (keys.ArrowLeft) view.yaw -= 0.055;
+  if (keys.ArrowRight) view.yaw += 0.055;
+  const movement = movementInput(keys, touch),
+    aim = getAim(p),
+    input = {
+      ...movement,
+      ...aim,
+      left: mouse.left || touch.left,
+      right: mouse.right || touch.right,
+      leftPressed: handPress.left,
+      rightPressed: handPress.right,
+      ability: pressAbility,
+      dash: pressDash,
+      auto: false,
+      ...sortieHud.consumeInput(),
+    };
+  pressAbility = pressMelee = pressDash = false;
+  handPress.left = handPress.right = false;
+  return input;
+}
+feedback = installFeedback({
+  capture: () => reportCapture.request(),
+  context: () => {
+    const p = world?.players.find((p) => p.id === localId);
+    return {
+      capturedAt: new Date().toISOString(),
+      client: 'in-game-feedback-v1',
+      build: document.querySelector('#buildLabel')?.title || 'Development build',
+      page: location.pathname,
+      screen: deployment ? 'deployment' : playing ? 'battle' : document.body.dataset.screen,
+      browser: navigator.userAgent,
+      viewport: { width: innerWidth, height: innerHeight, pixelRatio: devicePixelRatio },
+      effects: impactMode(),
+      session: room ? (isHost ? 'co-op host' : 'co-op guest') : 'solo',
+      players: world?.players.length || 1,
+      mission: { name: m.name, mode: m.mode, seed: m.seed, id: m.id },
+      round: world
+        ? {
+            time: Math.round(world.time * 10) / 10,
+            status: world.status,
+            zone: world.zoneIndex,
+            kills: world.kills,
+          }
+        : null,
+      player: p
+        ? {
+            x: Math.round(p.x),
+            y: Math.round(p.y),
+            altitude: Math.round(p.altitude),
+            hp: Math.round(p.hp),
+          }
+        : null,
+      loadout: cleanBuild(build),
+    };
+  },
+  onOpen: () => {
+    if (document.pointerLockElement) document.exitPointerLock();
+    clearInputs();
+    hubView.stop();
+  },
+  onClose: () => {
+    clearInputs();
+    lastTick = performance.now();
+  },
+});
+let lastTick = performance.now();
+setInterval(() => {
+  const now = performance.now(),
+    dt = Math.min(0.05, (now - lastTick) / 1000);
+  lastTick = now;
+  if (!playing || !world) {
+    if (!world) tickHub(now, dt);
+    return;
+  }
+  if (!room && feedback?.isOpen()) return;
+  mouseLook.update(dt);
+  const input = getInput();
+  if (isHost || !room) {
+    setInput(world, localId, input);
+    step(world, dt);
+    if (now - lastSnapshot >= 33) {
+      lastSnapshot = now;
+      if (room) broadcast({ type: 'state', world: snapshot(world, false) });
+    }
+    if (world.status !== 'playing') finish();
+  } else {
+    safeSend(hostConn, { type: 'input', input });
+    if (now - receivedAt > 10000) {
+      resetNetwork('Host stopped responding. Create or join a new room.');
+    }
+  }
+}, 1000 / 60);
+let hudAt = 0;
+const updateHud = createCombatHud({
+  readState: () => ({ world, localId }),
+  sortieHud,
+  mouseLook,
+  beforeUpdate: (current) => destructionLab.update(current),
+});
+const updateLabels = createWorldLabels({ readState: () => ({ world, localId }), projectWorld });
+function drawRadar() {
+  const p = world.players.find((p) => p.id === localId);
+  if (p) drawNearbyMap($('#radar'), world, p, view.yaw);
+}
+function frame(t) {
+  const homeDelta = homeTick ? Math.min(0.05, (t - homeTick) / 1000) : 0;
+  homeTick = t;
+  try {
+    if (deployment && world) {
+      updateInsertion(t);
+    } else if (playing && world) {
+      drawBattle3D($('#battle'), world, localId, t / 1000);
+      updateSound(world, localId);
+      if (t - hudAt > 65) {
+        updateHud();
+        updateLabels();
+        drawRadar();
+        if (!$('#levelMapPanel').hidden) drawMap($('#levelMap'), world.mission, world, localId);
+        hudAt = t;
+      }
+    } else if (document.body.dataset.screen === 'hub') {
+      updateBoostSound(0);
+      updatePreviewSound(previewBuild(), t / 1000, false);
+      hubView.draw(t / 1000, impactMode() === 'reduced');
+    } else if (document.body.dataset.screen === 'home') {
+      updatePreviewSound(previewBuild(), t / 1000, false);
+      updateBoostSound(0);
+      if (!homePaused) homeTime = reduced ? 2 : homeTime + homeDelta;
+      drawHomeBattle3D($('#mechPreview'), build, homeTime);
+    } else if (document.body.dataset.screen === 'garage') {
+      updatePreviewSound(previewBuild(), t / 1000, equipmentPreview);
+      updateBoostSound(thrusterPreview ? 0.8 : 0, build.parts.booster);
+      drawPreview3D(
+        $('#mechPreview'),
+        previewBuild(),
+        reduced ? 0 : t / 1000,
+        thrusterPreview,
+        equipmentPreview,
+      );
+    } else {
+      updateBoostSound(0);
+      updatePreviewSound(previewBuild(), t / 1000, false);
+    }
+    reportCapture.frame(
+      playing || deployment?.insertionAt != null
+        ? $('#battle')
+        : deployment
+          ? null
+          : document.body.dataset.screen === 'hub'
+            ? $('#hubCanvas')
+            : ['home', 'garage'].includes(document.body.dataset.screen)
+              ? $('#mechPreview')
+              : null,
+    );
+  } catch (e) {
+    console.error(e);
+    if (deployment) abortDeployment('Graphics interrupted during deployment. Try again or reload.');
+    else toast('Graphics interrupted. Return to the workshop and reload.');
+  }
+  requestAnimationFrame(frame);
+}
+updateBuild();
+updateSquad();
+updateMission();
+requestAnimationFrame(frame);
+window.addEventListener('resize', () => {
+  if (!playing) drawMap($('#missionMap'), m);
+});
+const invite = new URLSearchParams(location.search).get('room');
+if (invite && /^[A-Z2-9]{6}$/i.test(invite)) showJoin(invite.toUpperCase());
 
-function previewBuild(){const slot=activeSlot.startsWith('equip')?Number(activeSlot.slice(5)):Math.max(0,build.equipment.findIndex(Boolean)),item=build.equipment[slot];return{...build,selectedSlot:slot,weapon:RANGED[item]?item:build.weapon,melee:MELEE[item]?item:build.melee};}
-$('#battle').addEventListener('wheel',e=>{if(playing)e.preventDefault();},{passive:false});
+$('#testWeapons').onclick = () => {
+  initAudio();
+  equipmentPreview = !equipmentPreview;
+  $('#testWeapons').textContent = equipmentPreview ? 'Stop equipment' : 'Test equipment';
+  $('#testWeapons').setAttribute('aria-pressed', String(equipmentPreview));
+};
 
-let orbitPointer=null,orbitX=0,orbitY=0;const previewCanvas=$('#mechPreview');
-previewCanvas.addEventListener('pointerdown',e=>{if(document.body.dataset.screen!=='garage')return;orbitPointer=e.pointerId;orbitX=e.clientX;orbitY=e.clientY;previewCanvas.setPointerCapture(e.pointerId);previewCanvas.classList.add('dragging');});
-previewCanvas.addEventListener('pointermove',e=>{if(e.pointerId!==orbitPointer)return;rotatePreview((e.clientX-orbitX)*.008,(e.clientY-orbitY)*.006);orbitX=e.clientX;orbitY=e.clientY;});
-function endOrbit(){orbitPointer=null;previewCanvas.classList.remove('dragging');}previewCanvas.addEventListener('pointerup',endOrbit);previewCanvas.addEventListener('pointercancel',endOrbit);
-previewCanvas.addEventListener('wheel',e=>{if(document.body.dataset.screen==='garage'){e.preventDefault();zoomPreview(e.deltaY*.008);}},{passive:false});
-previewCanvas.addEventListener('keydown',e=>{if(document.body.dataset.screen!=='garage')return;const v={ArrowLeft:[-.15,0],ArrowRight:[.15,0],ArrowUp:[0,-.1],ArrowDown:[0,.1]}[e.code];if(v){e.preventDefault();rotatePreview(...v);}if(e.key==='+'||e.key==='-'){e.preventDefault();zoomPreview(e.key==='+'?-1:1);}});$('#resetOrbit').onclick=resetPreviewOrbit;
+function previewBuild() {
+  const inspected = getWorkshopPreview(build),
+    slot = activeSlot.startsWith('equip')
+      ? Number(activeSlot.slice(5))
+      : Math.max(0, inspected.equipment.findIndex(Boolean)),
+    item = inspected.equipment[slot];
+  return {
+    ...inspected,
+    selectedSlot: slot,
+    weapon: RANGED[item] ? item : inspected.weapon,
+    melee: MELEE[item] ? item : inspected.melee,
+  };
+}
+$('#battle').addEventListener(
+  'wheel',
+  (e) => {
+    if (playing) e.preventDefault();
+  },
+  { passive: false },
+);
 
-$('#pauseBattle').onclick=()=>{homePaused=!homePaused;$('#pauseBattle').textContent=homePaused?'Resume battle':'Pause battle';$('#pauseBattle').setAttribute('aria-pressed',String(homePaused));};
+installPreviewOrbit({
+  canvas: $('#mechPreview'),
+  isActive: () => document.body.dataset.screen === 'garage',
+  rotatePreview,
+  zoomPreview,
+  resetButton: $('#resetOrbit'),
+  resetPreviewOrbit,
+});
+$('#pauseBattle').onclick = () => {
+  homePaused = !homePaused;
+  $('#pauseBattle').textContent = homePaused ? 'Resume battle' : 'Pause battle';
+  $('#pauseBattle').setAttribute('aria-pressed', String(homePaused));
+};
 
-if(destructionLabEnabled){const option=document.createElement('option');option.value='destruction';option.textContent='Experimental 02 / Breakwater';$('#trialMode').append(option);}
-const destructionLab=createDestructionLab({
- open:modal,
- graphics:destructionGraphics,
- canControl:()=>!room||isHost,
- choose(variant){if(room&&!isHost){toast('The host selects the destruction run.');return;}selectMode('destruction',variant);$('#modal').close();if(room){menuScreen('home');toast(m.name+' selected. Mark ready to deploy together.');}else $('#deploy').click();},
- fitKit(){build=cleanBuild({...build,chassis:'anvil',parts:{torso:'standard',head:'standard',arms:'standard',legs:'standard',booster:'standard'},equipment:['hammer','launcher','repair']});buildChanged();toast('Demolition kit fitted: hammer, rockets and repair.');},
- restart(){if(room&&!isHost){toast('Only the host can reset a run.');return;}world=newWorld(m,room?roster:[me()]);if(isHost)broadcast({type:'start',world:snapshot(world)});startView();}
+if (destructionLabEnabled) {
+  const option = document.createElement('option');
+  option.value = 'destruction';
+  option.textContent = 'Experimental 02 / Breakwater';
+  $('#trialMode').append(option);
+}
+const destructionLab = createDestructionLab({
+  open: modal,
+  graphics: destructionGraphics,
+  canControl: () => !room || isHost,
+  choose(variant) {
+    if (room && !isHost) {
+      toast('The host selects the destruction run.');
+      return;
+    }
+    selectMode('destruction', variant);
+    $('#modal').close();
+    if (room) {
+      menuScreen('home');
+      toast(m.name + ' selected. Mark ready to deploy together.');
+    } else $('#deploy').click();
+  },
+  fitKit() {
+    build = cleanBuild({
+      ...build,
+      chassis: 'anvil',
+      parts: {
+        torso: 'standard',
+        head: 'standard',
+        arms: 'standard',
+        legs: 'standard',
+        booster: 'standard',
+      },
+      equipment: ['hammer', 'launcher', 'repair'],
+    });
+    buildChanged();
+    toast('Demolition kit fitted: hammer, rockets and repair.');
+  },
+  restart() {
+    if (room && !isHost) {
+      toast('Only the host can reset a run.');
+      return;
+    }
+    world = newWorld(m, room ? roster : [me()]);
+    startView();
+  },
 });

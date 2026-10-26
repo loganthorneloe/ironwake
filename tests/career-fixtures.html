@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IRONWAKE / Career fixtures</title>
+<style>body{max-width:720px;margin:40px auto;padding:20px;background:#10231c;color:#d4eacb;font:16px/1.6 system-ui}button,a{display:inline-block;padding:12px;margin:8px;background:#244536;color:#def4d1;border:1px solid #8baf7d}output{display:block}</style>
+<h1>Career progression development fixtures</h1><p>This preview-only fixture replaces career progress on this origin with six synthetic campaign victories on Vanguard. It creates research and pilot points through the actual reward API. It is excluded from deployed assets.</p>
+<button id="prepare">Prepare career test save</button><output id="status">No fixture installed.</output><a href="/ironwake/">Open the actual game</a>
+<script type="module">
+import{newCareer,awardCareer}from '../dist/career-progression.js';
+import{newCampaign,recordSortie}from '../dist/campaign.js';
+import{MISSIONS}from '../dist/mission-catalog.js';
+import{chassisBlueprint}from '../dist/chassis.js';
+import{createCallsign,validCallsign}from '../dist/pilot.js';
+document.getElementById('prepare').onclick=()=>{
+ if(!['127.0.0.1','localhost'].includes(location.hostname))return;
+ let pilot;try{pilot=JSON.parse(localStorage.getItem('iw-callsign'));}catch{}
+ if(!validCallsign(pilot)){pilot=createCallsign();localStorage.setItem('iw-callsign',JSON.stringify(pilot));}
+ let career=newCareer(),campaign=newCampaign(86);
+ for(let level=0;level<6;level++){
+  const mission=MISSIONS[level];
+  career=awardCareer(career,{campaignId:campaign.id,level,missionId:mission.id,outcome:'victory',practice:false,chassisId:'vanguard',pilot});
+  campaign=recordSortie(campaign,'victory',{outcome:'victory',missionId:mission.id,round:true,seconds:90,salvage:300,pilots:[{name:pilot,modules:[]}]});
+ }
+ localStorage.setItem('iw-career-v1',JSON.stringify(career));localStorage.setItem('iw-campaign',JSON.stringify(campaign));localStorage.setItem('iw-active',JSON.stringify(chassisBlueprint('vanguard')));
+ document.getElementById('status').textContent='Ready: 7 Vanguard research and 7 pilot points. Open Anchorage and visit Parts foundry or Signal archive.';
+};
+</script></html>

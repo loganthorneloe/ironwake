@@ -1,0 +1,14 @@
+node_modules/
+.git/
+.openai/
+.wrangler/
+.voicegen/
+build/
+dist/vendor/
+dist/audio/
+dist/server/
+dist/.openai/
+dist/build-info.json
+package-lock.json
+tests/**/*.html
+*.log
