@@ -36,12 +36,12 @@ export function objectiveStatus(w,p){
  const teamDetail=zone?`${cleared} / ${zones.length} sectors secured${w.encounter?` · ${contacts} hostiles remaining`:''}.`:w.extractTime>0?`${Math.max(0,2-w.extractTime).toFixed(1)}s until squad extraction.`:'Bring every surviving pilot into the exit zone.';
  return{personal,personalDetail,team,teamDetail,progress};
 }
-export function ultimateStatus(p,ability){
+export function ultimateStatus(p,ability,rechargeRate=1){
  if(!ability)return{state:'unavailable',percent:0,counter:'—',detail:'NO ULTIMATE',ready:false};
- const remaining=Math.max(0,p.abilityCd||0),percent=Math.min(100,Math.max(0,Math.floor((1-remaining/ability.cd)*100+1e-7)));
+ const remaining=Math.max(0,p.abilityCd||0),seconds=remaining/(Number.isFinite(rechargeRate)&&rechargeRate>0?rechargeRate:1),percent=Math.min(100,Math.max(0,Math.floor((1-remaining/ability.cd)*100+1e-7)));
  if(p.hp<=0)return{state:'offline',percent,counter:'OFFLINE',detail:'MECH DISABLED',ready:false};
- if(p.active>0)return{state:'active',percent,counter:remaining.toFixed(1)+'s',detail:'ACTIVE · '+p.active.toFixed(1)+'s',ready:false};
- if(remaining>0)return{state:'charging',percent,counter:remaining.toFixed(1)+'s',detail:'RECHARGING · '+percent+'%',ready:false};
+ if(p.active>0)return{state:'active',percent,counter:seconds.toFixed(1)+'s',detail:'ACTIVE · '+p.active.toFixed(1)+'s',ready:false};
+ if(remaining>0)return{state:'charging',percent,counter:seconds.toFixed(1)+'s',detail:'RECHARGING · '+percent+'%',ready:false};
  return{state:'ready',percent:100,counter:'READY',detail:'PRESS E TO ACTIVATE',ready:true};
 }
 
