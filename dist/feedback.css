@@ -1,5 +1,211 @@
-#feedbackDialog{width:min(1000px,95vw);max-width:1000px;max-height:94dvh;padding:28px;background:#111d23;color:#e4ecea;border:1px solid #526768;border-top:3px solid #edaf68;box-sizing:border-box;overflow:auto}
-#feedbackDialog::backdrop{background:#050b10ce}#feedbackDialog h2{font-size:28px;margin:6px 30px 20px 0}#feedbackDialog h3{font-size:14px;margin:8px 0 12px}#feedbackDialog h3 span{font-size:11px;color:#9fb4b6;font-weight:normal}#feedbackDialog button{cursor:pointer}#feedbackDialog button:disabled{opacity:.5;cursor:default}
-.feedback-kinds{display:flex;gap:8px}.feedback-kinds button{flex:1;padding:12px;background:#18282e;color:#dae6e4;border:1px solid #42585c}.feedback-kinds button[aria-pressed=true]{border-color:#edaf68;background:#3a3028;color:#ffd8ad}.feedback-note{color:#b2c5c6;line-height:1.5;font-size:13px}.feedback-layout{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}.feedback-fields label{display:grid;gap:6px;font-size:13px;margin-bottom:12px}.feedback-fields input,.feedback-fields textarea,.feedback-fields select{width:100%;box-sizing:border-box;padding:10px;background:#0a141a;color:#e4ecea;border:1px solid #40565d;border-radius:3px;font:inherit}.feedback-fields textarea{resize:vertical;min-height:60px}.feedback-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}.feedback-evidence{min-width:0}.feedback-evidence img{width:100%;border:1px solid #40565d;border-radius:4px}.feedback-evidence p{font-size:12px;line-height:1.5;color:#b2c5c6}.feedback-evidence button,.feedback-actions>button:not(.primary),#feedbackDone{padding:9px 12px;border:1px solid #52676a;color:#dce8e5;background:#1b2c32}.feedback-evidence h3:not(:first-child){margin-top:24px}.feedback-evidence audio{width:100%;height:42px;margin:10px 0}.feedback-evidence details{margin-top:20px;font-size:12px;color:#9fb4b6}.feedback-evidence pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto}.feedback-consent{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;margin-top:16px}.feedback-consent input{margin-top:4px;flex-shrink:0}.feedback-actions{display:flex;justify-content:space-between;gap:12px;margin-top:16px}#feedbackStatus{font-size:13px;line-height:1.5;color:#ffd3a0;overflow-wrap:anywhere}#feedbackSuccess a{display:block;color:#ffd3a0;margin:20px 0}#gameReport{position:absolute;right:22px;top:76px;z-index:15;background:#17262be8;border:1px solid #779091;color:#ebd7ba;padding:9px 13px;font:12px monospace;cursor:pointer}
-#feedbackDialog .feedback-consent input{width:16px;min-width:16px;height:16px;flex:0 0 16px}#feedbackDialog .feedback-fields{min-width:0}#feedbackDialog .feedback-pair>*{min-width:0}#feedbackDialog .feedback-kinds>*{min-width:0}
-@media(max-width:650px){#feedbackDialog{padding:20px}.feedback-layout{grid-template-columns:minmax(0,1fr);gap:12px}.feedback-evidence img{max-height:200px;object-fit:contain}.feedback-actions{flex-direction:column-reverse}#feedbackDialog h2{font-size:23px}#gameReport{right:12px;top:64px;padding:8px}.feedback-kinds button{font-size:12px}}
+#feedbackDialog {
+  width: min(1000px, 95vw);
+  max-width: 1000px;
+  max-height: 94dvh;
+  padding: 28px;
+  background: #111d23;
+  color: #e4ecea;
+  border: 1px solid #526768;
+  border-top: 3px solid #edaf68;
+  box-sizing: border-box;
+  overflow: auto;
+}
+#feedbackDialog::backdrop {
+  background: #050b10ce;
+}
+#feedbackDialog h2 {
+  font-size: 28px;
+  margin: 6px 30px 20px 0;
+}
+#feedbackDialog h3 {
+  font-size: 14px;
+  margin: 8px 0 12px;
+}
+#feedbackDialog h3 span {
+  font-size: 11px;
+  color: #9fb4b6;
+  font-weight: normal;
+}
+#feedbackDialog button {
+  cursor: pointer;
+}
+#feedbackDialog button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.feedback-kinds {
+  display: flex;
+  gap: 8px;
+}
+.feedback-kinds button {
+  flex: 1;
+  padding: 12px;
+  background: #18282e;
+  color: #dae6e4;
+  border: 1px solid #42585c;
+}
+.feedback-kinds button[aria-pressed='true'] {
+  border-color: #edaf68;
+  background: #3a3028;
+  color: #ffd8ad;
+}
+.feedback-note {
+  color: #b2c5c6;
+  line-height: 1.5;
+  font-size: 13px;
+}
+.feedback-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+.feedback-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.feedback-fields input,
+.feedback-fields textarea,
+.feedback-fields select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  background: #0a141a;
+  color: #e4ecea;
+  border: 1px solid #40565d;
+  border-radius: 3px;
+  font: inherit;
+}
+.feedback-fields textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+.feedback-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.feedback-evidence {
+  min-width: 0;
+}
+.feedback-evidence img {
+  width: 100%;
+  border: 1px solid #40565d;
+  border-radius: 4px;
+}
+.feedback-evidence p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #b2c5c6;
+}
+.feedback-evidence button,
+.feedback-actions > button:not(.primary),
+#feedbackDone {
+  padding: 9px 12px;
+  border: 1px solid #52676a;
+  color: #dce8e5;
+  background: #1b2c32;
+}
+.feedback-evidence h3:not(:first-child) {
+  margin-top: 24px;
+}
+.feedback-evidence audio {
+  width: 100%;
+  height: 42px;
+  margin: 10px 0;
+}
+.feedback-evidence details {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #9fb4b6;
+}
+.feedback-evidence pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 180px;
+  overflow: auto;
+}
+.feedback-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 16px;
+}
+.feedback-consent input {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.feedback-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+#feedbackStatus {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #ffd3a0;
+  overflow-wrap: anywhere;
+}
+#feedbackSuccess a {
+  display: block;
+  color: #ffd3a0;
+  margin: 20px 0;
+}
+#gameReport {
+  position: absolute;
+  right: 22px;
+  top: 76px;
+  z-index: 15;
+  background: #17262be8;
+  border: 1px solid #779091;
+  color: #ebd7ba;
+  padding: 9px 13px;
+  font: 12px monospace;
+  cursor: pointer;
+}
+#feedbackDialog .feedback-consent input {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+}
+#feedbackDialog .feedback-fields {
+  min-width: 0;
+}
+#feedbackDialog .feedback-pair > * {
+  min-width: 0;
+}
+#feedbackDialog .feedback-kinds > * {
+  min-width: 0;
+}
+@media (max-width: 650px) {
+  #feedbackDialog {
+    padding: 20px;
+  }
+  .feedback-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .feedback-evidence img {
+    max-height: 200px;
+    object-fit: contain;
+  }
+  .feedback-actions {
+    flex-direction: column-reverse;
+  }
+  #feedbackDialog h2 {
+    font-size: 23px;
+  }
+  #gameReport {
+    right: 12px;
+    top: 64px;
+    padding: 8px;
+  }
+  .feedback-kinds button {
+    font-size: 12px;
+  }
+}

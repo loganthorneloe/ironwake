@@ -1,0 +1,27 @@
+// Mission identity, briefing and encounter balance. Geometry lives in ../layouts/ashgate.js.
+export default {
+  id: 'ashgate',
+  name: 'Ashgate Depot',
+  act: 1,
+  kind: 'purge',
+  theme: 'scrapyard',
+  color: '#e8ac70',
+  floor: '#45483c',
+  sky: '#8d8875',
+  minutes: 2,
+  cell: '2-4',
+  kills: 28,
+  minimum: 50,
+  wave: 6.2,
+  mix: ['drone', 'drone', 'gunner'],
+  brief: 'Sweep the salvage depot. Keep moving through short lanes and flank the loading stacks.',
+  lesson: 'Learn to kite, dash through swarms and use both hands.',
+  reward: 90,
+  layout: 'cross',
+  points: [
+    [800, 900],
+    [1800, 850],
+    [1350, 1550],
+  ],
+  height: 0,
+};

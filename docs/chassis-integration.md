@@ -37,7 +37,7 @@ Legacy saves without a chassis retain their original stats, physical scale and u
 
 ## Network and regression checks
 
-The campaign build uses `ironwake-campaign-rounds-v1-` room IDs. Both hosting and joining require the mission director, between-round refits, chassis registry and expanded part catalog, preventing either older branch from silently normalizing the other branch's builds. The integrated destruction lab uses the separate `ironwake-demolition-campaign-v1-` prefix on both endpoints; its invites preserve `?lab=destruction`.
+The campaign build uses `ironwake-cinematic-enemies-v2-` room IDs. Both hosting and joining require the mission director, between-round refits, chassis registry and expanded part catalog, preventing either older branch from silently normalizing the other branch's builds. The integrated destruction lab uses the separate `ironwake-demolition-cinematic-enemies-v2-` prefix on both endpoints; its invites preserve `?lab=destruction`.
 
 Run all tests after each integration. Check every factory kit; smallest/largest mixed squads; saved/JSON/snapshot round trips; invalid heavy mounts with otherwise legal weight; body-sized cover and shield coverage; both muzzle origins at several headings and elevations; all elevated objectives; and Full/Reduced special effects on Scout and Giga roots. Verify shared ranks, contracts and fracture state in actual multiplayer after integration. The current automated coverage does not replace those future multi-feature multiplayer checks.
 

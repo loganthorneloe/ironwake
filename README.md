@@ -6,25 +6,33 @@ Start a **New campaign** for a nine-mission co-op run across three acts. Earn sh
 
 ## Nine-mission campaign
 
-| Act | Missions | Combat focus |
-| --- | --- | --- |
-| I / Breach | Ashgate Depot, Glasswater Spillway, Relay Nine | Swarms, cell recovery, sequential uplinks |
-| II / Disrupt | Iron Orchard, Gale Foundry, Blackrail Junction | Shielded batteries, elevated sabotage, fueled escort |
-| III / Overload | Halo Spire, Shatter Basin, The Crown Engine | Vertical captures, siege-leader hunts, final warden |
+| Act            | Missions                                       | Combat focus                                         |
+| -------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| I / Breach     | Ashgate Depot, Glasswater Spillway, Relay Nine | Swarms, cell recovery, sequential uplinks            |
+| II / Disrupt   | Iron Orchard, Gale Foundry, Blackrail Junction | Shielded batteries, elevated sabotage, fueled escort |
+| III / Overload | Halo Spire, Shatter Basin, The Crown Engine    | Vertical captures, siege-leader hunts, final warden  |
 
 Rounds target roughly 2–3½ minutes, plus refit time. Each arena has authored cover, landmarks, objective positions and spawn lanes. Later missions shorten reinforcement intervals, introduce more armored enemies, raise damage and hull pressure, and add telegraphed artillery. Co-op increases encounter capacity and objective durability; combatants remain capped at 48.
 
 Campaign missions advance in order. Every layout also has a **Practice** drill that gives no campaign upgrades. The original long Cinderfall operation remains available through **Classic operation**. See [mission design and tuning](docs/campaign-missions.md) for layouts, economy, difficulty and testing notes.
 
-## Earn during combat, install between missions
+## Build your mech during the sortie
 
-Destroy enemies and objectives for shared salvage. Successful extraction grants each present pilot one personal upgrade choice, plus a second when enough salvage was earned. Spend those choices in the campaign refit screen or bank them for later. Choose weapon damage, heavy-target damage, damage reduction, recovery, mobility or special recharge. Each module stacks up to three times, with up to eighteen module slots reserved for future run expansion.
+Combat now offers **18 field upgrades, 18 salvage tech components, and 18 resonance relays**. Every living pilot earns XP from defeated machines and installs one of three personal upgrades with **1 / 2 / 3** while the fight continues. Press **F** near a cache to buy tech with shared salvage, or link a resonance relay for a tactical calibration. Free combat drops collect automatically at close range. Press **B** for your field inventory and timers; **U** releases the cursor for card selection.
 
-Installed modules carry across missions in the same run. They add no loadout weight and never modify saved workshop builds. Combat-time installation requests are rejected. Defeat or withdrawal ends the run; starting a new run clears its modules and retains best mission/contract times. Returning pilots retain their profile; late joiners receive one catch-up choice per secured mission. All surviving pilots must land at extraction for three seconds after the ship arrives.
+**Permanent upgrade trees live at Wake Anchorage.** Start or continue a campaign to enter the existing walkable 3D harbor. Visit **Chief Rook at Parts foundry** for chassis research and fitting, or **Echo at Signal archive** for pilot training. Walk with WASD/arrows, press E nearby, or select a station marker to navigate there; touch controls are available. The station panel keeps the world visible. Each chassis has three paths, nine upgrades and its own point balance; pilot skills follow your callsign across mechs. Successful campaign extraction earns one chassis point and one pilot point, with free station respecs. Career progress survives reloads and new campaigns, using separate points from run modules and in-mission upgrades. See [career progression, hub dependency and campaign flow](docs/career-progression.md).
 
-The host owns progress, contracts and reward validation. Each pilot chooses upgrades independently. Refit, contract and insertion changes clear squad readiness. Duplicate or stale upgrade requests cannot consume another choice. Campaign saves migrate from the earlier outline. Rooms use the isolated **ironwake-enemy-behaviors-v1** protocol; no host migration or mid-mission joining is supported.
+**Command → mission → Anchorage:** choose your next drop and ready up at Command, deploy, then return to the arrival berths after results. Extraction saves career rewards, personal run refit tokens and permanent armory credits through their separate systems. Visit Run supplies for run modules, the foundry/arsenal for owned gear, and Command for the next mission. Continue restores the campaign and saved progression; a failed run requires a fresh run while retaining career and armory progress.
 
-Run **node scripts/preview-server.mjs 4178**, then open **http://127.0.0.1:4178/ironwake/**. The arena overview is **http://127.0.0.1:4178/tests/mission-gallery.html**. The development-only campaign fixture page can prepare synthetic completed-round saves for refit testing; it is excluded from deployment. These are playable first-pass missions, with encounter balance and full-run pacing still needing human squad playtests.
+Destroy enemies and objectives for shared salvage. Successful extraction grants each present pilot one personal upgrade choice, plus a second when enough salvage was earned. Spend those choices in the campaign refit screen or bank them for later. Choose weapon damage, heavy-target damage, damage reduction, recovery, mobility or special recharge. Run modules are installed at Run supplies between sorties, can stack up to three times, and have eighteen slots.
+
+Successful extraction carries installed upgrades, salvage tech, XP, and unused level choices into the next campaign mission. Timed and sortie-long relay calibrations reset on deployment. Each pilot also earns the existing refit choices between missions, including the extra choice for enough total earned salvage; spending in the field does not reduce that earnings threshold. Defeat or withdrawal ends the run. Saved workshop builds remain independent.
+
+Field technology affects both hands, precision hits, melee, dash, flight, burns, chain arcs, specials, shields, healing, salvage, XP, objectives, and destructible terrain. World hardware has unique procedural models, map markers, and Full/Reduced presentation. The host validates choices and cache purchases, including revision, range, obstruction, cost, and stack limits. Co-op rooms use **ironwake-anchorage-career-cinematic-field-v4**; every pilot must run this build.
+
+The host owns progress, contracts and reward validation. Each pilot chooses upgrades independently. Refit, contract and insertion changes clear squad readiness. Duplicate or stale upgrade requests cannot consume another choice. Campaign saves migrate from the earlier outline. Rooms use the isolated **ironwake-anchorage-career-cinematic-field-v4** protocol; no host migration or mid-mission joining is supported.
+
+See [the full 54-entry technology catalog, balance rules, and playtest routes](docs/field-progression.md). Run **node scripts/preview-server.mjs 4190** and open **http://127.0.0.1:4190/ironwake/** to start a campaign, or **http://127.0.0.1:4190/tests/field-lab.html** for the live field-systems proving ground.
 
 ## Play
 
@@ -34,7 +42,7 @@ Anime animation adds deeper anticipation, fast pose releases, spring recovery, b
 
 Small enemy packs now coordinate short rushes, opposite flanks and suppression. Distinct directional audio warns of each attack family. Two pilots landing 60 direct damage within 0.9 seconds trigger **Cross Break**, with a brief protected stagger and anime impact reaction; cooperative kills get **Team Finish**. The lab includes audio previews, a team combo drill and a four-pilot pressure drill with sparring partners. Combat continues at full speed through all feedback.
 
-See [enemy behavior design, research and tuning](docs/enemy-behaviors.md). Run `node scripts/preview-server.mjs 4181` and open **http://127.0.0.1:4181/tests/enemy-lab.html** to inspect every attack or fight individual/mixed enemies. Co-op rooms use **ironwake-enemy-behaviors-v1** so all pilots share the new warning and artillery state.
+See [enemy behavior design, research and tuning](docs/enemy-behaviors.md). Run `node scripts/preview-server.mjs 4181` and open **http://127.0.0.1:4181/tests/enemy-lab.html** to inspect every attack or fight individual/mixed enemies. Co-op rooms use **ironwake-anchorage-career-cinematic-field-v4** so all pilots share the new warning and artillery state.
 
 - **WASD:** horizontal thrust. **Space:** fly upward; release to descend.
 - **Mouse:** aim continuously, without holding a weapon button. If capture is unavailable, hover over the battlefield and move to its edge to keep turning. **Esc:** release the cursor / pause aim; click the battlefield to resume.
@@ -43,7 +51,8 @@ See [enemy behavior design, research and tuning](docs/enemy-behaviors.md). Run `
 - **Shift:** directional damaging dash. **E:** rechargeable special.
 - **M:** sound. **H:** controls. Arrow keys turn if mouse capture is unavailable.
 - **V:** switch between Full and Reduced impact effects. The same control is available in the menu and controls dialog.
-- Install earned upgrades on the **campaign refit screen between missions**.
+- **1 / 2 / 3:** select a field upgrade. **F:** open nearby salvage cache or link resonance relay. **B:** field inventory. **U:** release cursor for upgrade cards.
+- Install additional earned modules on the **campaign refit screen between missions**.
 - Mechs and random callsigns persist in browser storage. Saved mechs can be exported and imported as JSON.
 
 Five frame components trade armor against movement speed and booster capacity. Both hand mounts accept ranged, melee or defensive equipment. Overweight mechs remain editable but cannot deploy. Damage, cooldowns, range, area effects and utility vary across weapons.
@@ -52,13 +61,13 @@ Five frame components trade armor against movement speed and booster capacity. B
 
 The workshop and campaign offer **15 chassis in five size classes**, three per class. Open the chassis selector beside the Workshop heading. **Fit chassis** keeps your parts, paint and weapons; **Factory build** loads that platform's starting kit. Parts remain independently replaceable and painted.
 
-| Class | Starting chassis | Heavy-rated hand mounts | Relative size |
-| --- | --- | --- | --- |
-| Scout | Lark (recon), Needle (sniper), Wisp (aerial) | 0 / 1 / 0 | 0.76× |
-| Light | Kestrel (skirmish), Ronin (melee), Harrier (aerial) | 1 / 0 / 1 | 0.90× |
-| Medium | Vanguard (assault), Longbow (sniper), Warden (support) | 1 / 2 / 1 | 1.00× |
-| Heavy | Bastion (defense), Anvil (artillery), Skyguard (aerial) | 2 each | 1.23× |
-| Giga | Colossus (assault), Leviathan (siege), Citadel (support) | 2 each | 1.68× |
+| Class  | Starting chassis                                         | Heavy-rated hand mounts | Relative size |
+| ------ | -------------------------------------------------------- | ----------------------- | ------------- |
+| Scout  | Lark (recon), Needle (sniper), Wisp (aerial)             | 0 / 1 / 0               | 0.76×         |
+| Light  | Kestrel (skirmish), Ronin (melee), Harrier (aerial)      | 1 / 0 / 1               | 0.90×         |
+| Medium | Vanguard (assault), Longbow (sniper), Warden (support)   | 1 / 2 / 1               | 1.00×         |
+| Heavy  | Bastion (defense), Anvil (artillery), Skyguard (aerial)  | 2 each                  | 1.23×         |
+| Giga   | Colossus (assault), Leviathan (siege), Citadel (support) | 2 each                  | 1.68×         |
 
 All chassis currently have two independently controlled hand mounts and one special. A heavy-rated item occupies one of those hands and consumes one heavy allowance. Railguns, Dynamo, rocket/plasma launchers, Gatling, flamethrowers, hammers and Bulwark shields require heavy-rated mounts. Payload and mount limits are validated separately, and an invalid build remains editable but cannot deploy.
 
@@ -96,6 +105,8 @@ Choose **Rook**, **Flint** or **Echo** from the menu's **Voice** button or the c
 
 ## Develop
 
+The [cinematic transitions foundation](docs/cinematic-transitions.md) adds fast menu cuts, staged deployment loading and a brief camera insertion. Spawning and co-op combat wait for every pilot to finish the entire intro; Escape cancels deployment. Reduced impact effects keep the chase camera stable. Rooms use `ironwake-anchorage-career-cinematic-field-v4`, so squad members must run the same build.
+
 Press **F8** or **Report** to submit a bug or suggestion with an automatic game
 screenshot, optional voice recording and game context. See [reporting setup and
 testing](docs/in-game-feedback.md) for the required server secret and storage.
@@ -104,6 +115,8 @@ Requires Node.js 22.13+ (24 recommended).
 
 ```sh
 npm ci
+npm run format:check
+npm run architecture:check
 npm test
 npm run dev
 ```
@@ -119,7 +132,7 @@ Deployments use Wrangler authentication stored outside this repository. The chec
 
 ## Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs `npm ci`, all Node tests, and the Cloudflare dry-run build on Node.js 24 for PRs targeting `main` and pushes to `main`. You can also run checks manually from **Actions → CI → Run workflow**. New runs cancel superseded checks for the same branch or PR.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs installation, formatting and architecture checks, all Node tests, and the Cloudflare dry-run build on Node.js 24 for PRs targeting `main`, pushes to `main`, and merge-queue groups. You can also run checks manually from **Actions → CI → Run workflow**. New runs cancel superseded checks for the same branch or PR.
 
 Configure a branch rule for `main` requiring **Test and build** before merging. CI does not deploy, reference GitHub secrets, or require Cloudflare credentials or a GitHub deployment environment. The build command uses Wrangler's `--dry-run` option and does not publish the Worker or assets.
 
@@ -142,6 +155,7 @@ npm version major --no-git-tag-version # 0.1.1 -> 1.0.0
 ```
 
 Commit `package.json` and `package-lock.json` with the release change. The npm version lifecycle also refreshes the local label. Build/deploy hooks embed the current version automatically; deployment remains the manual command described above.
+
 ## Experimental destruction branch
 
 Open `http://localhost:4174/ironwake/?lab=destruction` to opt into the destruction
@@ -178,7 +192,6 @@ physics transforms. Counters expose awake/settled chunks, draw calls and rendere
 geometry/texture counts. These are not frame-rate guarantees; low-end/mobile
 hardware still needs measurement.
 
-
 ## Multiplayer
 
 PeerJS provides public room discovery; WebRTC carries game traffic directly between browsers. The squad host runs the authoritative simulation and sends snapshots. PeerJS binary serialization chunks large level and horde messages before transmission; the JSON channel’s 16 KB limit is not suitable for these snapshots. Players join and ready up before deployment. Keep the host tab active.
@@ -187,9 +200,16 @@ Public PeerJS signaling and Google STUN require internet. There is no TURN relay
 
 ## Project layout
 
-- `dist/core.js`, `planet-mission.js`: simulation, combat and mission progression.
+See [parallel development](docs/parallel-development.md) for subsystem ownership, measured merge examples and the proposed merge queue. [The integration manifest](docs/parallel-integration.json) records the exact source heads; [the sequential update record](docs/parallel-stack-integration.md) distinguishes current non-browser checks from historical visual evidence and inherited readiness gaps.
+
+- `dist/core.js`: compatible public API and explicit simulation tick order.
+- `dist/catalog/`, `dist/builds/`: equipment, build normalization, combined career/field stats and shared recovery rates.
+- `dist/simulation/`: authoritative world/input, movement, weapons, damage, enemies and tick phases.
+- `dist/mission-catalog.js`, `dist/missions/`: compatible mission API, individual definitions/layouts, generation and tuning.
 - `dist/three-view.js`, scene/model/effect modules: cel-shaded Three.js rendering.
-- `dist/app.js`: workshop, HUD, input and room lifecycle.
+- `dist/app.js`: session, workshop, input and room composition.
+- `dist/app/`: HUD, world labels, deployment lifecycle, manual and preview controllers.
+- `dist/network/protocol.js`: shared room namespaces matching the finalized predecessor stack.
 - `dist/campaign.js`, `campaign-view.js`, `campaign.css`: campaign state, territory board, insertion choices and deployment loadouts.
 - `dist/sortie-progression.js`, `sortie-view.js`, `sortie.css`: shared salvage, field modules, contract selection and sortie reports.
 - `dist/audio.js`, `sound-design.js`: synthesized sound effects.
@@ -198,7 +218,7 @@ Public PeerJS signaling and Google STUN require internet. There is no TURN relay
 
 Cinderfall follows a continuous, walled freight canyon through five stages: insertion, battery ridge, a crawler escort, the reactor, and extraction. Seeded cargo cover, raised decks, gantries, silo banks, route lights, windblown ash and industrial signage give each section a readable path. Reinforcements arrive at freight gates near the squad; distant ordinary robots recycle while elites and objectives persist. Enemy caps scale from 32 solo to 56 with four pilots, with short arrival telegraphs and roughly 5.5 seconds between reinforcement waves.
 
-The menus and HUD share a monochrome green visual system inspired by the Even G2 display: thin outlines, subdued secondary text and brighter active states. Static scenery and ordinary robot parts use instanced rendering; a spatial collision index and analytic sight-line checks keep larger encounters practical. No new image/model downloads or remote font requests are needed.
+The authored inspection hangar, command workspaces and compact combat HUD use Arial and technical visual states. Static scenery and ordinary robot parts use instanced rendering; a spatial collision index and analytic sight-line checks keep larger encounters practical. No remote font requests are needed.
 
 Cinderfall scales objectives and enemies for 1–4 pilots. Two rare siege-mech arrivals and the reactor warden have warning, descent and impact phases. The deterministic pacing model estimates 13.2–14.8 minutes for 1–4 pilots. This is not a complete human playtest; difficulty remains a work in progress. `tests/planet-preview.html` walks through the route and `tests/cinder-stress.html` exercises four pilots against 56 robots.
 
