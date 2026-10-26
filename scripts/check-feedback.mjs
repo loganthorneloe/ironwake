@@ -21,7 +21,13 @@ try{
  });
  const page=await ctx.newPage();page.setDefaultTimeout(20000);page.on('pageerror',e=>{errors.push(e.message);console.error(e.message);});
  console.log('Opening game');await page.goto('http://127.0.0.1:4294/ironwake/');await page.waitForFunction(()=>!!document.querySelector('#feedbackDialog'),null,{timeout:20000});
- console.log('Entering range');await page.locator('#startGarage').click();await page.locator('#testBuildTop').click();await page.waitForFunction(()=>!document.querySelector('#game').hidden&&document.querySelector('#deploymentScreen').hidden,null,{timeout:20000});
+ console.log('Checking deployment cancellation and feedback coexistence');await page.locator('#startGarage').click();await page.locator('#testBuildTop').click();
+ await page.waitForFunction(()=>document.querySelector('#sceneFlow').dataset.phase==='loading');
+ assert.equal(await page.locator('#buildLabel').isVisible(),true);
+ await page.locator('.deployment-cancel').click();await page.waitForFunction(()=>document.querySelector('#sceneFlow').dataset.phase==='idle');
+ await page.keyboard.press('F8');await page.waitForFunction(()=>document.querySelector('#feedbackScreenshot').naturalWidth>0);
+ assert.equal(await page.locator('#feedbackDialog #buildLabel').count(),1);await page.locator('#feedbackCancel').click();
+ console.log('Entering range');await page.locator('#testBuildTop').click();await page.waitForFunction(()=>!document.querySelector('#game').hidden&&document.querySelector('#sceneFlow').dataset.phase==='idle',null,{timeout:20000});
  await page.evaluate(()=>document.exitPointerLock());await page.waitForTimeout(500);await page.screenshot({path:output+'/01-game.png'});
  console.log('Opening report');await page.keyboard.press('F8');await page.waitForFunction(()=>document.querySelector('#feedbackScreenshot').naturalWidth>0,null,{timeout:15000});
  const source=await page.locator('#feedbackScreenshot').getAttribute('src');await writeFile(output+'/captured-game.jpg',new Uint8Array(await page.evaluate(async url=>Array.from(new Uint8Array(await(await fetch(url)).arrayBuffer())),source)));

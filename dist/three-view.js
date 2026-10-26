@@ -3,6 +3,8 @@ import{applyEnemyPose}from './enemy-motion.js';
 import{createEnemyFlair}from './enemy-flair.js';
 import {buildDestructionScene} from './destruction-scene.js';
 import {bindDestruction} from './destruction.js';
+import{insertionView}from './cinematic.js';
+import{impactMode}from './impact-preferences.js';
 import{chassisFor}from './chassis.js';
 import{buildChassisModel}from './chassis-models.js';
 import{createEquipmentFX}from './equipment-effects.js';
@@ -144,15 +146,27 @@ for(const p of shooters){const g=playerModels.get(p.ownerId);if(!g)continue;cons
 const rings=w.effects.filter(e=>e.kind==='dodge'||e.kind==='plasmaSlam');ringPool(effectPool,rings.length,effectsGroup,0xff9d5c);effectPool.forEach((o,i)=>{const e=rings[i];if(!e)return;const progress=1-e.life/e.max;o.position.set(e.x*S,(e.z??11)*S+progress*.6,e.y*S);o.rotation.x=-Math.PI/2;o.scale.setScalar(Math.max(.1,e.r*S*progress));o.material.color.set(e.kind==='plasmaSlam'?'#b49aff':e.color);o.material.opacity=e.life/e.max;o.scale.z=e.kind==='plasmaSlam'?4:1;});ringPool(hazardPool,w.hazards.length,effectsGroup,0xff4422);hazardPool.forEach((o,i)=>{const h=w.hazards[i];if(!h)return;o.position.set(h.x*S,.14,h.y*S);o.rotation.x=-Math.PI/2;o.scale.setScalar(h.r*S);o.material.opacity=.55+Math.sin(t*22)*.4;});
 equipmentFX.update(w,t,playerModels);}
 
-export function prepareBattle(canvas,w,id){if(!initBattle(canvas))return false;drawBattle3D(canvas,w,id,performance.now()/1000);return true;}
+const paintFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+export async function prepareBattle(canvas,w,id,{stage=()=>{},current=()=>true}={}){
+ if(!initBattle(canvas))throw Error(graphicsError());
+ stage(0,'Constructing terrain and launch corridor');await paintFrame();if(!current())return false;
+ buildWorld(w.mission);
+ stage(1,'Assembling squad, weapons and combat systems');await paintFrame();if(!current())return false;
+ drawBattle3D(canvas,w,id,performance.now()/1000,{insertion:0,render:false});
+ stage(2,'Warming shaders and first combat frame');await paintFrame();if(!current())return false;
+ await renderer.compileAsync(scene,camera);if(!current())return false;
+ drawBattle3D(canvas,w,id,performance.now()/1000,{insertion:0,deployment:true});
+ if(drawError)throw Error(drawError);
+ stage(3,'Launch corridor clear');await paintFrame();return current();
+}
 export function getAim(p){return{aimPoint:{...aim},angle:view.yaw,pitch:view.pitch};}
 export function projectWorld(x,y,z){point.set(x*S,z*S,y*S).project(camera);return{x:(point.x*.5+.5)*innerWidth,y:(-.5*point.y+.5)*innerHeight,visible:point.z<1&&point.z>0&&Math.abs(point.x)<1.2&&Math.abs(point.y)<1.2};}
-export function drawBattle3D(canvas,w,id,t){if(!initBattle(canvas))return;const self=w.players.find(p=>p.id===id)||w.players[0];if(!self)return;combatFeel.restore(camera);bindDestruction(w.mission,w.destruction);if(worldSeed!==w.mission.seed)buildWorld(w.mission);const dt=Math.min(.06,lastFrame?t-lastFrame:.016);lastFrame=t;const width=canvas.clientWidth,height=canvas.clientHeight;if(renderer.domElement.width!==Math.round(width*renderer.getPixelRatio())||renderer.domElement.height!==Math.round(height*renderer.getPixelRatio())){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
-destructionScene?.update(w,dt);if(w.operation)updatePlanet(mapGroup,w,t);if(['sandbox','trial'].includes(w.mission.mode))mapGroup.position.set(Math.round(self.x*S/10)*10,0,Math.round(self.y*S/10)*10);updateActors(w,dt,t,id);robotBatch.update(enemyModels);enemyCues.update(w);enemyFlair.update(w);updateEffects(w,t);const sun=scene.children.find(o=>o.isDirectionalLight);sun.position.set(self.x*S-50,85,self.y*S-45);sun.target.position.set(self.x*S,0,self.y*S);scene.updateMatrixWorld(true);const eye=thirdPersonView(self,view,camera.aspect);desired.set(eye.position.x,eye.position.y,eye.position.z);pivot.set(eye.pivot.x,eye.pivot.y,eye.pivot.z);
+export function drawBattle3D(canvas,w,id,t,presentation={}){if(!initBattle(canvas))return;const self=w.players.find(p=>p.id===id)||w.players[0];if(!self)return;combatFeel.restore(camera);bindDestruction(w.mission,w.destruction);if(worldSeed!==w.mission.seed)buildWorld(w.mission);const dt=Math.min(.06,lastFrame?t-lastFrame:.016);lastFrame=t;const width=canvas.clientWidth,height=canvas.clientHeight;if(renderer.domElement.width!==Math.round(width*renderer.getPixelRatio())||renderer.domElement.height!==Math.round(height*renderer.getPixelRatio())){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
+actors.visible=!presentation.deployment;projectiles.visible=!presentation.deployment;effectsGroup.visible=!presentation.deployment;destructionScene?.update(w,dt);if(w.operation)updatePlanet(mapGroup,w,t);if(['sandbox','trial'].includes(w.mission.mode))mapGroup.position.set(Math.round(self.x*S/10)*10,0,Math.round(self.y*S/10)*10);updateActors(w,dt,t,id);robotBatch.update(enemyModels);enemyCues.update(w);enemyFlair.update(w);updateEffects(w,t);const sun=scene.children.find(o=>o.isDirectionalLight);sun.position.set(self.x*S-50,85,self.y*S-45);sun.target.position.set(self.x*S,0,self.y*S);scene.updateMatrixWorld(true);const eye=thirdPersonView(self,view,camera.aspect);const cinematic=presentation.insertion!==undefined?insertionView(eye,presentation.insertion,chassisFor(self.build).scale,impactMode()==='reduced'):null;const pose=cinematic||eye;desired.set(pose.position.x,pose.position.y,pose.position.z);pivot.set(eye.pivot.x,eye.pivot.y,eye.pivot.z);
 cameraRay.set(pivot,desired.clone().sub(pivot).normalize());cameraRay.far=pivot.distanceTo(desired);const obstruction=cameraRay.intersectObjects(coverMeshes,false)[0];if(obstruction)desired.copy(pivot).addScaledVector(cameraRay.ray.direction,Math.max(.6,obstruction.distance-.5));
-if(firstCamera||obstruction){camera.position.copy(desired);firstCamera=false;}else camera.position.lerp(desired,1-Math.exp(-dt*22));
-lookTarget.copy(camera.position).add(new T.Vector3(eye.direction.x,eye.direction.y,eye.direction.z).multiplyScalar(100));camera.lookAt(lookTarget);camera.fov=T.MathUtils.lerp(camera.fov,eye.fov,Math.min(1,dt*12));camera.updateProjectionMatrix();camera.updateMatrixWorld();
-ray.setFromCamera(new T.Vector2(0,0),camera);ray.far=160;const hit=ray.intersectObjects(aimMeshes,true).find(h=>h.distance>2);if(hit)target.copy(hit.point);else ray.ray.at(140,target);aim={x:target.x/S,y:target.z/S,z:Math.max(0,target.y/S)};hitBursts.update(w.damageEvents||[],camera);combatFeel.update(w,self,dt,t,camera);combatFeel.apply(camera,t);skyGroup.position.copy(camera.position);renderer.render(scene,camera);}
+if(firstCamera||obstruction||cinematic){camera.position.copy(desired);firstCamera=false;}else camera.position.lerp(desired,1-Math.exp(-dt*22));
+lookTarget.copy(camera.position).add(new T.Vector3(eye.direction.x,eye.direction.y,eye.direction.z).multiplyScalar(100));if(cinematic)lookTarget.set(cinematic.target.x+(camera.position.x-cinematic.position.x)*cinematic.chaseWeight,cinematic.target.y+(camera.position.y-cinematic.position.y)*cinematic.chaseWeight,cinematic.target.z+(camera.position.z-cinematic.position.z)*cinematic.chaseWeight);camera.lookAt(lookTarget);camera.fov=cinematic?cinematic.fov:T.MathUtils.lerp(camera.fov,eye.fov,Math.min(1,dt*12));camera.updateProjectionMatrix();camera.updateMatrixWorld();
+ray.setFromCamera(new T.Vector2(0,0),camera);ray.far=160;const hit=ray.intersectObjects(aimMeshes,true).find(h=>h.distance>2);if(hit)target.copy(hit.point);else ray.ray.at(140,target);aim={x:target.x/S,y:target.z/S,z:Math.max(0,target.y/S)};hitBursts.update(w.damageEvents||[],camera);combatFeel.update(w,self,dt,t,camera);combatFeel.apply(camera,t);skyGroup.position.copy(camera.position);if(presentation.render!==false)renderer.render(scene,camera);}
 const orbit={yaw:.58,pitch:.22,distance:15};
 export function rotatePreview(x,y){orbit.yaw+=x;orbit.pitch=T.MathUtils.clamp(orbit.pitch+y,-.18,.9);}
 export function zoomPreview(delta){orbit.distance=T.MathUtils.clamp(orbit.distance+delta,13,34);}

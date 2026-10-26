@@ -52,7 +52,7 @@ The audio tracker consumes each replicated action once, prioritizes threats aime
 
 Ashgate teaches the original three roles. Glasswater introduces Rammers; Relay Nine introduces Needles. Iron Orchard introduces Menders; Gale Foundry introduces Bellows artillery. Later mixes combine these roles, with support in escort rounds and a broader roster in the final act. Cinderfall adds specialists progressively after the initial beachhead. Siege-leader identity, landing and mission-critical persistence remain intact.
 
-The room prefix is `ironwake-enemy-behaviors-v1-`; both endpoints need this version because warnings and shells are gameplay-relevant replicated state. Workshop builds and campaign-save formats do not change.
+The room prefix is `ironwake-cinematic-enemies-v2-`; both endpoints need this version because warnings and shells are gameplay-relevant replicated state. Workshop builds and campaign-save formats do not change.
 
 ## Presentation and authoring
 
