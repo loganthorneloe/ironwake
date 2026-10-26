@@ -22,7 +22,7 @@ Destroy enemies and objectives for shared salvage. Successful extraction grants 
 
 Installed modules carry across missions in the same run. They add no loadout weight and never modify saved workshop builds. Combat-time installation requests are rejected. Defeat or withdrawal ends the run; starting a new run clears its modules and retains best mission/contract times. Returning pilots retain their profile; late joiners receive one catch-up choice per secured mission. All surviving pilots must land at extraction for three seconds after the ship arrives.
 
-The host owns progress, contracts and reward validation. Each pilot chooses upgrades independently. Refit, contract and insertion changes clear squad readiness. Duplicate or stale upgrade requests cannot consume another choice. Campaign saves migrate from the earlier outline. Rooms use the isolated **ironwake-enemy-behaviors-v1** protocol; no host migration or mid-mission joining is supported.
+The host owns progress, contracts and reward validation. Each pilot chooses upgrades independently. Refit, contract and insertion changes clear squad readiness. Duplicate or stale upgrade requests cannot consume another choice. Campaign saves migrate from the earlier outline. Rooms use the isolated **ironwake-cinematic-enemies-v2** protocol; no host migration or mid-mission joining is supported.
 
 Run **node scripts/preview-server.mjs 4178**, then open **http://127.0.0.1:4178/ironwake/**. The arena overview is **http://127.0.0.1:4178/tests/mission-gallery.html**. The development-only campaign fixture page can prepare synthetic completed-round saves for refit testing; it is excluded from deployment. These are playable first-pass missions, with encounter balance and full-run pacing still needing human squad playtests.
 
@@ -95,6 +95,8 @@ Hit bursts share three instanced draw calls (28 hits maximum); explosions share 
 Choose **Rook**, **Flint** or **Echo** from the menu's **Voice** button or the combat pilot-name button, then preview the voice before deploying. Each has 32 original English anime-style callouts generated with [OmniVoice](https://github.com/k2-fsa/OmniVoice): weapon attacks, specials, movement and squad reactions. The selected base voice persists across sessions and loadouts. **VOICE ON/OFF** saves a separate speech preference; **SOUND [M]** mutes all audio. Priority and cooldowns keep callouts from overlapping or repeating on every shot. See [pilot callouts](docs/pilot-callouts.md) for the audition page, line catalog and generation workflow.
 
 ## Develop
+
+The [cinematic transitions foundation](docs/cinematic-transitions.md) adds fast menu cuts, staged deployment loading and a brief camera insertion. Spawning and co-op combat wait for every pilot to finish the entire intro; Escape cancels deployment. Reduced impact effects keep the chase camera stable. Rooms use `ironwake-cinematic-v2`, so squad members must run the same build.
 
 Press **F8** or **Report** to submit a bug or suggestion with an automatic game
 screenshot, optional voice recording and game context. See [reporting setup and
